@@ -11,7 +11,14 @@ import {
 } from "@/journey/camera/dockPose";
 import { getActiveNode, JOURNEY_NODES } from "@/journey/constants/nodes";
 import { isInteractiveTarget } from "@/journey/input/isInteractiveTarget";
-import { setLookDragging } from "@/journey/input/lookDragStore";
+import {
+  beginGalleryGesture,
+  endGalleryGesture,
+  getGalleryGesture,
+  lookPitchFromPointerDy,
+  lookYawFromPointerDx,
+  resolveGalleryGesture,
+} from "@/journey/input/lookDragStore";
 import {
   getFinishCredits,
   getFinishCreditsTarget,
@@ -51,14 +58,12 @@ const _up = new Vector3(0, 1, 0);
 
 const LOOK_YAW_SENS = 0.0044;
 const LOOK_PITCH_SENS = 0.0034;
-const LOOK_YAW_SENS_TOUCH = 0.0032;
-const LOOK_PITCH_SENS_TOUCH = 0.0026;
+const LOOK_YAW_SENS_TOUCH = 0.0036;
+const LOOK_YAW_MAX = 0.95;
 const LOOK_PITCH_MIN = -0.62;
 const LOOK_PITCH_MAX = 0.7;
-/** Click the wall vs drag-to-look. */
-const LOOK_DRAG_PX = 6;
 /** Damp look offsets toward the finger/mouse target. */
-const LOOK_SMOOTH = 16;
+const LOOK_SMOOTH = 18;
 
 function applyStraightHop(
   fromT: number,
@@ -139,7 +144,9 @@ export function JourneyCamera({
       }
       pendingLookRef.current = false;
       draggingRef.current = false;
-      setLookDragging(false);
+      if (getGalleryGesture() !== "travel") {
+        endGalleryGesture();
+      }
       if (
         event &&
         activePointerRef.current === event.pointerId &&
@@ -160,16 +167,32 @@ export function JourneyCamera({
       activePointerRef.current = event.pointerId;
       lastPtrRef.current.x = event.clientX;
       lastPtrRef.current.y = event.clientY;
+      beginGalleryGesture(event.clientX, event.clientY);
     };
     const onMove = (event: PointerEvent) => {
       if (activePointerRef.current !== event.pointerId) return;
       if (!pendingLookRef.current && !draggingRef.current) return;
       const dx = event.clientX - lastPtrRef.current.x;
       const dy = event.clientY - lastPtrRef.current.y;
+      const gesture = resolveGalleryGesture(
+        event.clientX,
+        event.clientY,
+        event.pointerType,
+      );
+      switch (gesture) {
+        case "idle":
+          return;
+        case "travel":
+          return;
+        case "look":
+          break;
+        default: {
+          const _exhaustive: never = gesture;
+          return _exhaustive;
+        }
+      }
       if (!draggingRef.current) {
-        if (Math.hypot(dx, dy) < LOOK_DRAG_PX) return;
         draggingRef.current = true;
-        setLookDragging(true);
         try {
           el.setPointerCapture(event.pointerId);
         } catch {
@@ -181,10 +204,15 @@ export function JourneyCamera({
       lastPtrRef.current.y = event.clientY;
       const touch = event.pointerType !== "mouse";
       const yawSens = touch ? LOOK_YAW_SENS_TOUCH : LOOK_YAW_SENS;
-      const pitchSens = touch ? LOOK_PITCH_SENS_TOUCH : LOOK_PITCH_SENS;
-      lookYawTargetRef.current -= dx * yawSens;
+      lookYawTargetRef.current = MathUtils.clamp(
+        lookYawTargetRef.current + lookYawFromPointerDx(dx, yawSens),
+        -LOOK_YAW_MAX,
+        LOOK_YAW_MAX,
+      );
+      if (touch) return;
       lookPitchTargetRef.current = MathUtils.clamp(
-        lookPitchTargetRef.current - dy * pitchSens,
+        lookPitchTargetRef.current +
+          lookPitchFromPointerDy(dy, LOOK_PITCH_SENS),
         LOOK_PITCH_MIN,
         LOOK_PITCH_MAX,
       );
@@ -199,7 +227,7 @@ export function JourneyCamera({
       window.removeEventListener("pointermove", onMove, { capture: true });
       window.removeEventListener("pointerup", endLook, { capture: true });
       window.removeEventListener("pointercancel", endLook, { capture: true });
-      setLookDragging(false);
+      endGalleryGesture();
       el.style.cursor = "";
       el.style.touchAction = "";
     };

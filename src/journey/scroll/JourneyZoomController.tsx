@@ -1,5 +1,14 @@
 import { getActiveNode, JOURNEY_NODES } from "@/journey/constants/nodes";
 import { isInteractiveTarget } from "@/journey/input/isInteractiveTarget";
+import {
+  beginGalleryGesture,
+  endGalleryGesture,
+  getGalleryGesture,
+  isLookDragging,
+  resolveGalleryGesture,
+  travelDirFromTouchDy,
+  travelDirFromWheelDelta,
+} from "@/journey/input/lookDragStore";
 import { floorForIndex } from "@/journey/path/walkPath";
 import {
   getFinishCredits,
@@ -18,6 +27,8 @@ import { useEffect, useRef } from "react";
 
 /** One clear wheel flick / notch → next stop (slightly easier). */
 const WHEEL_STEP_THRESHOLD = 22;
+/** Touch swipe distance (px) to change stop. */
+const TOUCH_STEP_THRESHOLD = 28;
 /** Prevent trackpad inertia from skipping many stops. */
 const STEP_COOLDOWN_MS = 480;
 /** Short hop (adjacent stop) travel time. */
@@ -73,6 +84,9 @@ export function JourneyZoomController({
   const targetRef = useRef(store.progress);
   const speedRef = useRef(0.25);
   const wheelAccRef = useRef(0);
+  const touchYRef = useRef<number | null>(null);
+  const touchAccRef = useRef(0);
+  const ignoreGestureRef = useRef(false);
   const lastStepAtRef = useRef(0);
   const rafRef = useRef<number | null>(null);
   const lastTsRef = useRef(0);
@@ -144,6 +158,7 @@ export function JourneyZoomController({
         setFinishCreditsTarget(0);
       }
       wheelAccRef.current = 0;
+      touchAccRef.current = 0;
       schedule();
     };
 
@@ -194,16 +209,93 @@ export function JourneyZoomController({
       wheelAccRef.current += delta;
 
       if (Math.abs(wheelAccRef.current) >= WHEEL_STEP_THRESHOLD) {
-        const dir = wheelAccRef.current > 0 ? 1 : -1;
+        const dir = travelDirFromWheelDelta(wheelAccRef.current);
         wheelAccRef.current = 0;
         step(dir);
       }
     };
 
+    const onTouchStart = (event: TouchEvent) => {
+      if (!enabledRef.current) return;
+      if (isBookDemoDetailOpen()) return;
+      if (
+        isPhoneFinishOverlayActive() ||
+        isInteractiveTarget(event.target)
+      ) {
+        ignoreGestureRef.current = true;
+        touchYRef.current = null;
+        touchAccRef.current = 0;
+        return;
+      }
+      ignoreGestureRef.current = false;
+      if (event.touches.length !== 1) return;
+      const touch = event.touches[0];
+      touchYRef.current = touch.clientY;
+      touchAccRef.current = 0;
+      beginGalleryGesture(touch.clientX, touch.clientY);
+    };
+
+    const onTouchMove = (event: TouchEvent) => {
+      if (!enabledRef.current) return;
+      if (isBookDemoDetailOpen()) return;
+      if (ignoreGestureRef.current || isPhoneFinishOverlayActive()) return;
+      if (touchYRef.current == null) return;
+      if (event.touches.length !== 1) return;
+      if (isLookDragging()) return;
+
+      const touch = event.touches[0];
+      const gesture = resolveGalleryGesture(
+        touch.clientX,
+        touch.clientY,
+        "touch",
+      );
+      switch (gesture) {
+        case "idle":
+          return;
+        case "look":
+          return;
+        case "travel":
+          break;
+        default: {
+          const _exhaustive: never = gesture;
+          return _exhaustive;
+        }
+      }
+
+      event.preventDefault();
+      const y = touch.clientY;
+      const dy = touchYRef.current - y;
+      touchYRef.current = y;
+      touchAccRef.current += dy;
+
+      if (Math.abs(touchAccRef.current) >= TOUCH_STEP_THRESHOLD) {
+        const dir = travelDirFromTouchDy(touchAccRef.current);
+        touchAccRef.current = 0;
+        step(dir);
+      }
+    };
+
+    const onTouchEnd = () => {
+      ignoreGestureRef.current = false;
+      touchYRef.current = null;
+      touchAccRef.current = 0;
+      if (getGalleryGesture() !== "look") {
+        endGalleryGesture();
+      }
+    };
+
     window.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
+    window.addEventListener("touchend", onTouchEnd);
+    window.addEventListener("touchcancel", onTouchEnd);
 
     return () => {
       window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+      window.removeEventListener("touchcancel", onTouchEnd);
       store.bindScrollAnimator(null);
       if (rafRef.current != null) {
         window.cancelAnimationFrame(rafRef.current);
@@ -217,6 +309,8 @@ export function JourneyZoomController({
     if (!enabled) return;
     targetRef.current = store.progress;
     wheelAccRef.current = 0;
+    touchAccRef.current = 0;
+    ignoreGestureRef.current = false;
   }, [enabled, store]);
 
   return null;
