@@ -1,4 +1,5 @@
 import { getActiveNode, JOURNEY_NODES } from "@/journey/constants/nodes";
+import { isInteractiveTarget } from "@/journey/input/isInteractiveTarget";
 import { floorForIndex } from "@/journey/path/walkPath";
 import {
   getFinishCredits,
@@ -17,8 +18,6 @@ import { useEffect, useRef } from "react";
 
 /** One clear wheel flick / notch → next stop (slightly easier). */
 const WHEEL_STEP_THRESHOLD = 22;
-/** Touch swipe distance (px) to change stop (slightly easier). */
-const TOUCH_STEP_THRESHOLD = 28;
 /** Prevent trackpad inertia from skipping many stops. */
 const STEP_COOLDOWN_MS = 480;
 /** Short hop (adjacent stop) travel time. */
@@ -33,30 +32,6 @@ function isPhoneFinishOverlayActive(): boolean {
   if (typeof window === "undefined") return false;
   if (window.innerWidth > PHONE_MAX_PX) return false;
   return getFinishCredits() > 0.28;
-}
-
-/** Skip journey swipe/wheel when the user is tapping links, buttons, or scrollable UI. */
-function isInteractiveTarget(target: EventTarget | null): boolean {
-  if (!(target instanceof Element)) return false;
-  if (target instanceof HTMLElement) {
-    const tag = target.tagName;
-    if (
-      tag === "INPUT" ||
-      tag === "TEXTAREA" ||
-      tag === "SELECT" ||
-      tag === "BUTTON" ||
-      tag === "A" ||
-      tag === "LABEL"
-    ) {
-      return true;
-    }
-    if (target.isContentEditable) return true;
-  }
-  return Boolean(
-    target.closest(
-      "a, button, input, textarea, select, label, form, [role='button'], [data-allow-scroll], [data-footer-interactive]",
-    ),
-  );
 }
 
 function stopIndexForProgress(progress: number): number {
@@ -98,10 +73,6 @@ export function JourneyZoomController({
   const targetRef = useRef(store.progress);
   const speedRef = useRef(0.25);
   const wheelAccRef = useRef(0);
-  const touchYRef = useRef<number | null>(null);
-  const touchAccRef = useRef(0);
-  /** True when the gesture began on a footer link / control — don't steal the tap. */
-  const ignoreGestureRef = useRef(false);
   const lastStepAtRef = useRef(0);
   const rafRef = useRef<number | null>(null);
   const lastTsRef = useRef(0);
@@ -173,7 +144,6 @@ export function JourneyZoomController({
         setFinishCreditsTarget(0);
       }
       wheelAccRef.current = 0;
-      touchAccRef.current = 0;
       schedule();
     };
 
@@ -230,59 +200,10 @@ export function JourneyZoomController({
       }
     };
 
-    const onTouchStart = (event: TouchEvent) => {
-      if (!enabledRef.current) return;
-      if (isBookDemoDetailOpen()) return;
-      if (isPhoneFinishOverlayActive() || isInteractiveTarget(event.target)) {
-        ignoreGestureRef.current = true;
-        touchYRef.current = null;
-        touchAccRef.current = 0;
-        return;
-      }
-      ignoreGestureRef.current = false;
-      if (event.touches.length !== 1) return;
-      touchYRef.current = event.touches[0].clientY;
-      touchAccRef.current = 0;
-    };
-
-    const onTouchMove = (event: TouchEvent) => {
-      if (!enabledRef.current) return;
-      if (isBookDemoDetailOpen()) return;
-      if (ignoreGestureRef.current || isPhoneFinishOverlayActive()) return;
-      if (touchYRef.current == null) return;
-      if (event.touches.length !== 1) return;
-
-      event.preventDefault();
-      const y = event.touches[0].clientY;
-      const dy = touchYRef.current - y;
-      touchYRef.current = y;
-      touchAccRef.current += dy;
-
-      if (Math.abs(touchAccRef.current) >= TOUCH_STEP_THRESHOLD) {
-        const dir = touchAccRef.current > 0 ? 1 : -1;
-        touchAccRef.current = 0;
-        step(dir);
-      }
-    };
-
-    const onTouchEnd = () => {
-      ignoreGestureRef.current = false;
-      touchYRef.current = null;
-      touchAccRef.current = 0;
-    };
-
     window.addEventListener("wheel", onWheel, { passive: false });
-    window.addEventListener("touchstart", onTouchStart, { passive: true });
-    window.addEventListener("touchmove", onTouchMove, { passive: false });
-    window.addEventListener("touchend", onTouchEnd);
-    window.addEventListener("touchcancel", onTouchEnd);
 
     return () => {
       window.removeEventListener("wheel", onWheel);
-      window.removeEventListener("touchstart", onTouchStart);
-      window.removeEventListener("touchmove", onTouchMove);
-      window.removeEventListener("touchend", onTouchEnd);
-      window.removeEventListener("touchcancel", onTouchEnd);
       store.bindScrollAnimator(null);
       if (rafRef.current != null) {
         window.cancelAnimationFrame(rafRef.current);
@@ -296,8 +217,6 @@ export function JourneyZoomController({
     if (!enabled) return;
     targetRef.current = store.progress;
     wheelAccRef.current = 0;
-    touchAccRef.current = 0;
-    ignoreGestureRef.current = false;
   }, [enabled, store]);
 
   return null;
