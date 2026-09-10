@@ -1,7 +1,6 @@
 import { DestinationCard } from "@/journey/overlays/DestinationCard";
 import { storyItemGridClass } from "./peakShared";
 import { cn } from "@/utils/cn";
-import { useState } from "react";
 
 const PILLARS = [
   {
@@ -31,8 +30,6 @@ const PILLARS = [
 ] as const;
 
 export function VpsCard() {
-  const [selectedId, setSelectedId] = useState<string>(PILLARS[0].id);
-
   return (
     <DestinationCard
       size="lg"
@@ -44,31 +41,18 @@ export function VpsCard() {
         className={cn(storyItemGridClass(PILLARS.length), "min-h-0 flex-1")}
         aria-label="NavMe experience pillars"
       >
-        {PILLARS.map((pillar) => {
-          const selected = selectedId === pillar.id;
-          return (
-            <li key={pillar.id} className="min-h-0">
-              <button
-                type="button"
-                onClick={() => setSelectedId(pillar.id)}
-                aria-pressed={selected}
-                className={cn(
-                  "flex h-full w-full flex-col justify-center rounded-xl border px-3 py-2.5 text-left",
-                  selected
-                    ? "border-[#6ecfc8]/55 bg-nm-secondary/70 shadow-[0_0_0_1px_rgba(110,207,200,0.18)]"
-                    : "border-nm-border/60 bg-nm-secondary/40 hover:border-nm-border",
-                )}
-              >
-                <p className="text-[12px] font-semibold leading-snug tracking-tight text-nm-text">
-                  {pillar.label}
-                </p>
-                <p className="mt-1 text-[11px] leading-snug text-nm-muted">
-                  {pillar.detail}
-                </p>
-              </button>
-            </li>
-          );
-        })}
+        {PILLARS.map((pillar) => (
+          <li key={pillar.id} className="min-h-0">
+            <div className="flex h-full w-full flex-col justify-center rounded-xl border border-nm-border/60 bg-nm-secondary/40 px-3 py-2.5 text-left">
+              <p className="text-[12px] font-semibold leading-snug tracking-tight text-nm-text">
+                {pillar.label}
+              </p>
+              <p className="mt-1 text-[11px] leading-snug text-nm-muted">
+                {pillar.detail}
+              </p>
+            </div>
+          </li>
+        ))}
       </ul>
     </DestinationCard>
   );

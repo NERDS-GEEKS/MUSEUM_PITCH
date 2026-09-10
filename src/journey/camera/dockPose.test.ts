@@ -1,37 +1,55 @@
 import { Vector3 } from "three";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { poseAtDock } from "./dockPose";
-import { ROOM_DOCK_T, STORY_ROOMS } from "@/journey/path/walkPath";
+import { setWelcomeBeat } from "./galleryWallStore";
+import {
+  ROOM_DOCK_T,
+  STORY_ROOMS,
+  roomLookSign,
+} from "@/journey/path/walkPath";
 
-function lookDeltaZ(dockT: number): number {
+function pose(dockT: number): { pos: Vector3; look: Vector3 } {
   const pos = new Vector3();
   const look = new Vector3();
   poseAtDock(dockT, pos, look);
-  return look.z - pos.z;
+  return { pos, look };
 }
 
+afterEach(() => {
+  setWelcomeBeat("video");
+});
+
 describe("poseAtDock facing", () => {
-  it("looks north through ground-floor and second-floor galleries", () => {
-    for (const idx of [0, 1, 5]) {
-      expect(lookDeltaZ(ROOM_DOCK_T[idx])).toBeGreaterThan(2);
-      const pos = new Vector3();
-      const look = new Vector3();
-      poseAtDock(ROOM_DOCK_T[idx], pos, look);
-      expect(pos.z).toBeLessThan(STORY_ROOMS[idx].center[2]);
-    }
+  it("looks straight at Welcome's left video wall (centered robot view)", () => {
+    setWelcomeBeat("video");
+    const room = STORY_ROOMS[0];
+    const { pos, look } = pose(ROOM_DOCK_T[0]);
+    const lookSign = roomLookSign(0);
+    expect(look.x - pos.x).toBeGreaterThan(lookSign * 2);
+    expect(Math.abs(look.z - pos.z)).toBeLessThan(0.05);
+    expect(pos.y).toBeGreaterThan(room.center[1] + 1);
   });
 
-  it("looks south through first-floor galleries so the next room is ahead", () => {
-    for (const idx of [2, 3, 4]) {
-      expect(lookDeltaZ(ROOM_DOCK_T[idx])).toBeLessThan(-2);
-      const pos = new Vector3();
-      const look = new Vector3();
-      poseAtDock(ROOM_DOCK_T[idx], pos, look);
-      expect(pos.z).toBeGreaterThan(STORY_ROOMS[idx].center[2]);
+  it("looks straight at Welcome's right story wall on the second beat", () => {
+    setWelcomeBeat("story");
+    const { pos, look } = pose(ROOM_DOCK_T[0]);
+    const lookSign = roomLookSign(0);
+    expect(look.x - pos.x).toBeLessThan(-lookSign * 2);
+    expect(Math.abs(look.z - pos.z)).toBeLessThan(0.05);
+  });
+
+  it("looks straight at the right content wall in later galleries", () => {
+    for (const idx of [1, 2, 3, 4, 5]) {
+      const { pos, look } = pose(ROOM_DOCK_T[idx]);
+      const lookSign = roomLookSign(idx);
+      const wallSign = -lookSign;
+      expect((look.x - pos.x) * wallSign).toBeGreaterThan(2);
+      expect(Math.abs(look.z - pos.z)).toBeLessThan(0.05);
     }
   });
 
   it("keeps the finish room looking along the route", () => {
-    expect(lookDeltaZ(ROOM_DOCK_T[6])).toBeGreaterThan(2);
+    const { pos, look } = pose(ROOM_DOCK_T[6]);
+    expect(look.z - pos.z).toBeGreaterThan(2);
   });
 });

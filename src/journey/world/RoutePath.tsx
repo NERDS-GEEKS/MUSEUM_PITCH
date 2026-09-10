@@ -63,9 +63,8 @@ function ProgressArrowHead({
 
 /**
  * Route arrow:
- * - Adjacent hops: visible, tracks the navigation path
- * - Skip hops: hidden (splash-style)
- * - Settled in a room: visible at the dock
+ * - Adjacent hops: visible with Nav beside it on the path
+ * - Skip hops / finish mural / reading a wall: hidden
  */
 export function RoutePath({
   showArrow = true,
@@ -103,7 +102,10 @@ export function RoutePath({
     const onRoute = seg?.mode === "route" || store.travelIntent !== 0;
     const t = clock.elapsedTime;
 
-    const hideMarkers = skip || finishWall;
+    const hideMarkers =
+      skip ||
+      finishWall ||
+      (!onRoute && getActiveNode(progress).id !== "complete");
     if (headRef.current) headRef.current.visible = !hideMarkers;
     if (pulseRef.current) pulseRef.current.visible = !hideMarkers;
     if (lineRef.current) lineRef.current.visible = !hideMarkers && onRoute;

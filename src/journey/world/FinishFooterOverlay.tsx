@@ -79,27 +79,17 @@ function isNativeFooterHref(href: string): boolean {
   );
 }
 
-function shortLabel(label: string): string {
-  if (label.includes("@")) return "Email";
-  return label;
-}
-
 function FooterNavLink({
   link,
   navigate,
   goToJourney,
-  align = "left",
 }: {
   link: FooterLink;
   navigate: NavigateFunction;
   goToJourney: GoToJourney;
-  align?: "left" | "right";
 }) {
-  const label = shortLabel(link.label);
   const className =
-    align === "right"
-      ? "block w-full truncate py-0.5 text-right text-[12px] leading-tight text-white/80 active:text-white"
-      : "block w-full truncate py-0.5 text-left text-[12px] leading-tight text-white/80 active:text-white";
+    "inline-flex min-h-9 items-center py-1 text-left text-[13px] leading-tight text-white/85 active:text-white";
 
   if (!link.journeyId && isNativeFooterHref(link.href)) {
     const external = link.href.startsWith("http");
@@ -111,7 +101,7 @@ function FooterNavLink({
         target={external ? "_blank" : undefined}
         rel={external ? "noopener noreferrer" : undefined}
       >
-        {label}
+        {link.label}
       </a>
     );
   }
@@ -123,7 +113,7 @@ function FooterNavLink({
       style={{ textShadow: inkShadow }}
       onClick={(event) => openFooterLink(link, event, navigate, goToJourney)}
     >
-      {label}
+      {link.label}
     </button>
   );
 }
@@ -186,72 +176,52 @@ export function FinishFooterOverlay() {
       aria-hidden={!interactive}
     >
       <div
-        className="w-full overflow-hidden px-4 pb-[max(0.65rem,env(safe-area-inset-bottom))] pt-5"
+        className="w-full px-4 pb-[max(0.9rem,env(safe-area-inset-bottom))] pt-6"
         style={{
           pointerEvents: interactive ? "auto" : "none",
           background:
-            "linear-gradient(to top, rgba(6,12,24,0.92) 0%, rgba(6,12,24,0.72) 62%, rgba(6,12,24,0.2) 88%, transparent 100%)",
+            "linear-gradient(to top, rgba(6,12,24,0.94) 0%, rgba(6,12,24,0.78) 58%, rgba(6,12,24,0.22) 88%, transparent 100%)",
           textShadow: inkShadow,
         }}
         data-footer-interactive
         data-allow-scroll
       >
-        <div className="flex items-end justify-between gap-6">
-          <div className="min-w-0 max-w-[22rem] flex-1">
-            <h2 className="text-[1.35rem] font-semibold leading-[1.08] tracking-tight text-white sm:text-[1.5rem]">
-              Navigate Smarter.
-              <span className="mt-0.5 block text-[1.05rem] font-medium text-white sm:text-[1.15rem]">
-                Experience Better.
-              </span>
-            </h2>
-            <p className="mt-2 text-[12px] leading-relaxed text-white/70 sm:text-[13px]">
-              NavMe transforms traditional museums into AR museums through
-              Digital Twins, indoor navigation, interactive exhibits, AI
-              guidance, and visitor analytics.
-            </p>
-          </div>
-          <div className="flex shrink-0 flex-col items-end gap-2">
-            <button
-              type="button"
-              onClick={onLeaveMural}
-              className="inline-flex items-center gap-1 rounded-full border border-white/20 bg-[rgba(10,18,36,0.75)] px-2.5 py-1.5 text-[11px] font-semibold text-white"
-              aria-label="Swipe down · Previous stop"
-            >
-              <span
-                className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/25 text-[10px] text-white"
-                aria-hidden
-              >
-                ↓
-              </span>
-              Back
-            </button>
-            <div className="text-right">
-              <h3 className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
-                Contact
-              </h3>
-              <ul className="mt-1 space-y-0">
-                {FOOTER_COLUMNS.find((column) => column.title === "Contact")?.links.map(
-                  (link) => (
-                    <li key={link.label}>
-                      <FooterNavLink
-                        link={link}
-                        navigate={navigate}
-                        goToJourney={goToJourney}
-                        align="right"
-                      />
-                    </li>
-                  ),
-                )}
-              </ul>
-            </div>
-          </div>
+        <h2 className="text-[1.35rem] font-semibold leading-[1.08] tracking-tight text-white">
+          Navigate Smarter.
+          <span className="mt-0.5 block text-[1.05rem] font-medium text-white">
+            Experience Better.
+          </span>
+        </h2>
+        <p className="mt-2 max-w-[22rem] text-[12px] leading-relaxed text-white/70">
+          NavMe transforms traditional museums into AR museums through
+          Digital Twins, indoor navigation, interactive exhibits, AI
+          guidance, and visitor analytics.
+        </p>
+
+        <div className="mt-3 border-t border-white/15 pt-3">
+          <h3 className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
+            Contact
+          </h3>
+          <ul className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5">
+            {FOOTER_COLUMNS.find((column) => column.title === "Contact")?.links.map(
+              (link) => (
+                <li key={link.label}>
+                  <FooterNavLink
+                    link={link}
+                    navigate={navigate}
+                    goToJourney={goToJourney}
+                  />
+                </li>
+              ),
+            )}
+          </ul>
         </div>
 
-        <div className="mt-3 border-t border-white/15 pt-2.5">
+        <div className="mt-2.5 border-t border-white/15 pt-2.5">
           <h3 className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
             Quick Links
           </h3>
-          <ul className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
+          <ul className="mt-1 flex flex-wrap gap-x-4 gap-y-0.5">
             {FOOTER_COLUMNS.find(
               (column) => column.title === "Quick Links",
             )?.links.map((link) => (
@@ -266,8 +236,22 @@ export function FinishFooterOverlay() {
           </ul>
         </div>
 
-        <div className="mt-2.5 border-t border-white/12 pt-2">
-          <p className="w-full text-center text-[10px] text-white/50">
+        <div className="mt-3 flex items-center justify-between gap-3 border-t border-white/12 pt-2.5">
+          <button
+            type="button"
+            onClick={onLeaveMural}
+            className="inline-flex shrink-0 items-center gap-1 rounded-full border border-white/20 bg-[rgba(10,18,36,0.75)] px-2.5 py-1.5 text-[11px] font-semibold text-white"
+            aria-label="Swipe down · Previous stop"
+          >
+            <span
+              className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/25 text-[10px] text-white"
+              aria-hidden
+            >
+              ↓
+            </span>
+            Back
+          </button>
+          <p className="min-w-0 text-right text-[10px] leading-tight text-white/50">
             © 2026 MetaDigi Labs. All Rights Reserved.
           </p>
         </div>

@@ -2,6 +2,10 @@ import {
   getActiveNode,
   JOURNEY_NODES,
 } from "@/journey/constants/nodes";
+import {
+  resolveGalleryStep,
+  setWelcomeBeat,
+} from "@/journey/camera/galleryWallStore";
 import { setFinishCreditsTarget } from "@/journey/opening/finishCreditsStore";
 import { isBookDemoDetailOpen } from "@/journey/overlays/destinationDetailStore";
 import { useJourneyProgressApi } from "@/journey/scroll/useJourneyProgress";
@@ -39,39 +43,36 @@ export function useJourneyKeyboardNudge(enabled: boolean) {
       const index = JOURNEY_NODES.findIndex((n) => n.id === active.id);
       if (index < 0) return;
 
-      let nextIndex = index;
-      let handled = false;
+      let dir: 1 | -1 | 0 = 0;
 
       switch (event.key) {
         case "ArrowUp":
         case "k":
         case "K":
         case " ":
-          // Up → next stop (same as Swipe / Scroll up).
-          handled = true;
-          if (active.id === "complete") break;
-          nextIndex = Math.min(JOURNEY_NODES.length - 1, index + 1);
+          dir = 1;
           break;
         case "ArrowDown":
         case "j":
         case "J":
-          // Down → previous stop (leave mural).
-          handled = true;
-          if (index <= 0) break;
-          nextIndex = Math.max(0, index - 1);
+          dir = -1;
           break;
-        default:
+        default: {
           return;
+        }
       }
 
-      if (!handled) return;
       event.preventDefault();
-      if (nextIndex === index) return;
+      if (dir !== 1 && dir !== -1) return;
+      const resolved = resolveGalleryStep(dir, index);
+      if (!resolved) return;
 
-      if (active.id === "complete") {
+      if (active.id === "complete" && dir === -1) {
         setFinishCreditsTarget(0);
       }
-      api.setProgress(JOURNEY_NODES[nextIndex].dockT);
+      setWelcomeBeat(resolved.welcomeBeat);
+      if (resolved.stopIndex === index) return;
+      api.setProgress(JOURNEY_NODES[resolved.stopIndex].dockT);
     };
 
     window.addEventListener("keydown", onKeyDown);

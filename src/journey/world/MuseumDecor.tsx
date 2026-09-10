@@ -8,6 +8,44 @@ import {
 import { GalleryFurnishings } from "@/journey/world/GalleryFurnishings";
 import { Text } from "@react-three/drei";
 
+/** Stay below the 4.2 m ceiling slab so two-line names are not clipped. */
+const PLAQUE_TOP_Y = 3.92;
+
+type PlaqueLayout = {
+  text: string;
+  width: number;
+  height: number;
+  fontSize: number;
+};
+
+function getPlaqueLayout(label: string): PlaqueLayout {
+  const words = label.trim().toUpperCase().split(/\s+/).filter(Boolean);
+  const single = words.join(" ");
+  if (single.length <= 18 || words.length < 2) {
+    return { text: single, width: 2.55, height: 0.44, fontSize: 0.17 };
+  }
+
+  let splitAt = 1;
+  let best = Number.POSITIVE_INFINITY;
+  for (let i = 1; i < words.length; i++) {
+    const left = words.slice(0, i).join(" ").length;
+    const right = words.slice(i).join(" ").length;
+    const awkward = words[i] === "&" || words[i] === "AND";
+    const score = Math.abs(left - right) + (awkward ? 8 : 0);
+    if (score < best) {
+      best = score;
+      splitAt = i;
+    }
+  }
+
+  return {
+    text: `${words.slice(0, splitAt).join(" ")}\n${words.slice(splitAt).join(" ")}`,
+    width: 2.78,
+    height: 0.72,
+    fontSize: 0.135,
+  };
+}
+
 function GalleryPlaque({
   position,
   rotationY,
@@ -17,10 +55,12 @@ function GalleryPlaque({
   rotationY: number;
   theme: GalleryTheme;
 }) {
+  const layout = getPlaqueLayout(theme.label);
+
   return (
     <group position={position} rotation={[0, rotationY, 0]}>
       <mesh>
-        <boxGeometry args={[2.55, 0.44, 0.08]} />
+        <boxGeometry args={[layout.width, layout.height, 0.08]} />
         <meshStandardMaterial
           color={theme.trim}
           metalness={0.4}
@@ -32,16 +72,18 @@ function GalleryPlaque({
       <Text
         font={galleryPlaqueFontUrl}
         position={[0, 0, 0.05]}
-        fontSize={0.17}
+        fontSize={layout.fontSize}
         color="#FFF8F0"
         anchorX="center"
         anchorY="middle"
-        letterSpacing={0.03}
-        outlineWidth={0.012}
+        textAlign="center"
+        letterSpacing={0.02}
+        lineHeight={1.15}
+        outlineWidth={0.01}
         outlineColor="#1A1410"
-        maxWidth={2.4}
+        maxWidth={layout.width - 0.18}
       >
-        {theme.label.toUpperCase()}
+        {layout.text}
       </Text>
     </group>
   );
@@ -90,9 +132,10 @@ export function MuseumDecor() {
         const faceCamera = look === 1 ? Math.PI : 0;
         const lookFaceOpen = look === 1 ? openings.north : openings.south;
         const doorZ = cz + look * (halfD - 0.22);
+        const plaqueH = getPlaqueLayout(theme.label).height;
         const plaquePos: [number, number, number] = lookFaceOpen
-          ? [cx - halfW + 0.22, 3.55, cz]
-          : [cx, 4.05, doorZ];
+          ? [cx - halfW + 0.22, PLAQUE_TOP_Y - plaqueH / 2, cz]
+          : [cx, PLAQUE_TOP_Y - plaqueH / 2, doorZ];
         const plaqueRot = lookFaceOpen ? Math.PI / 2 : faceCamera;
 
         return (

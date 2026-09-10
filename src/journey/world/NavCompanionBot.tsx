@@ -280,11 +280,15 @@ function createRobot(logoMap: Texture): RobotParts {
     vertexColors: true,
     side: FrontSide,
     fog: false,
+    depthTest: false,
+    depthWrite: true,
   });
   const coreMat = new MeshBasicMaterial({
     color: NAVME_CYAN,
     side: FrontSide,
     fog: false,
+    depthTest: false,
+    depthWrite: true,
   });
   mats.push(shellMat, coreMat);
 
@@ -292,6 +296,7 @@ function createRobot(logoMap: Texture): RobotParts {
     vertexColors: true,
     transparent: true,
     side: DoubleSide,
+    depthTest: false,
     depthWrite: false,
     fog: false,
   });
@@ -312,6 +317,7 @@ function createRobot(logoMap: Texture): RobotParts {
     const m = new Mesh(geo, mat);
     m.castShadow = false;
     m.receiveShadow = false;
+    m.renderOrder = 200;
     return m;
   };
 
@@ -343,6 +349,7 @@ function createRobot(logoMap: Texture): RobotParts {
 
   const group = new Group();
   group.name = "NavMeGuideBot";
+  group.renderOrder = 200;
 
   const torso = new Group();
   torso.position.y = BODY_Y;
@@ -394,7 +401,8 @@ function createRobot(logoMap: Texture): RobotParts {
     side: FrontSide,
     fog: false,
     toneMapped: false,
-    depthWrite: false,
+    depthTest: false,
+    depthWrite: true,
   });
   mats.push(logoMat);
   const logoBadge = meshOf(keep(new PlaneGeometry(0.16, 0.16)), logoMat);
@@ -444,10 +452,17 @@ function createRobot(logoMap: Texture): RobotParts {
       alphaTest: 0.02,
       side: FrontSide,
       fog: false,
+      depthTest: false,
+      depthWrite: true,
     });
     mats.push(visorMat);
   } else {
-    visorMat = new MeshBasicMaterial({ color: SCREEN_BLACK, fog: false });
+    visorMat = new MeshBasicMaterial({
+      color: SCREEN_BLACK,
+      fog: false,
+      depthTest: false,
+      depthWrite: true,
+    });
     mats.push(visorMat);
   }
   const visor = meshOf(
@@ -689,7 +704,6 @@ export function NavCompanionBot({
       lastProgressRef.current = progress;
       return;
     }
-    root.visible = true;
 
     const dProgress = progress - lastProgressRef.current;
     const rawSpeed = Math.abs(dProgress) / Math.max(delta, 0.001);
@@ -705,6 +719,29 @@ export function NavCompanionBot({
     }
     const goingBack = reverseHoldRef.current > 0;
     const traveling = intent !== 0 || speedRef.current > 0.012 || goingBack;
+    const activeNode = getActiveNode(progress);
+    const credits = getFinishCredits();
+    const onFinishStick =
+      MathUtils.smoothstep(credits, 0.02, 0.62) > 0.001 &&
+      (activeNode.id === "complete" || credits > 0.04) &&
+      !isStraightSkipHop();
+
+    // At a gallery wall the camera IS Nav's view — hide the body.
+    // Nav only appears beside the floor arrow while traveling (or on Connect).
+    const readingWall =
+      !traveling && !onFinishStick && activeNode.id !== "complete";
+    if (readingWall) {
+      root.visible = false;
+      setIntroCloud(false);
+      setNodeScreenAnchor({
+        nodeId: activeNode.id,
+        x: 0,
+        y: 0,
+        visible: false,
+      });
+      return;
+    }
+    root.visible = true;
 
     // Stay next to the floor arrow (same path point), slight camera-right bias
     const e = camera.matrixWorld.elements;
@@ -716,8 +753,7 @@ export function NavCompanionBot({
 
     const lookAhead = traveling && !goingBack ? 0.004 : 0;
     const companionT = Math.min(1, Math.max(0, progress + lookAhead));
-    const activeNode = getActiveNode(progress);
-    // Adjacent / settled: follow the navigation route (or hold at dock when idle)
+    // Travel with the floor arrow along the navigation route.
     const routeT =
       getTravelSegment()?.mode === "route" || traveling
         ? companionT
@@ -735,7 +771,6 @@ export function NavCompanionBot({
       : 0;
 
     // Finish wall: blend onto mural stick by credits (keeps easing when leaving).
-    const credits = getFinishCredits();
     const aspect =
       size.width > 0 && size.height > 0 ? size.width / size.height : 16 / 9;
     const isPhone = size.width > 0 && size.width < 768;
@@ -753,12 +788,7 @@ export function NavCompanionBot({
     const pathX = point.x + rx * side;
     const pathZ = point.z + rz * side;
     const pathY = onStair ? snapStairY(point.y) : point.y;
-    // Smoothstep so the robot eases off the mural instead of snapping to the path.
     const stickBlend = MathUtils.smoothstep(credits, 0.02, 0.62);
-    const onFinishStick =
-      stickBlend > 0.001 &&
-      (activeNode.id === "complete" || credits > 0.04) &&
-      !isStraightSkipHop();
 
     let targetX = pathX;
     let targetZ = pathZ;

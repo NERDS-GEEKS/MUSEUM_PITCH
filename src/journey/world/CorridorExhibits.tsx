@@ -1,3 +1,7 @@
+import {
+  GALLERY_BOARD_CENTER_Y,
+  GALLERY_BOARD_INSET,
+} from "@/journey/camera/dockPose";
 import { DESTINATION_CARDS } from "@/journey/overlays/cards";
 import { WelcomeVideoPreview } from "@/journey/overlays/cards/WelcomeVideoPreview";
 import { setExperienceVideoOpen } from "@/journey/overlays/experienceVideoStore";
@@ -67,7 +71,11 @@ function WallHtmlBoard({
         }
       >
         <planeGeometry args={[BOARD_W, BOARD_H]} />
-        <meshStandardMaterial color="#1c1916" roughness={0.8} />
+        <meshStandardMaterial
+          color="#14110e"
+          roughness={0.85}
+          metalness={0.08}
+        />
       </mesh>
       <mesh position={[0, BOARD_H / 2 + 0.1, 0.04]}>
         <boxGeometry args={[BOARD_W * 0.42, 0.045, 0.05]} />
@@ -88,8 +96,9 @@ function WallHtmlBoard({
           pointerEvents: htmlLive ? "auto" : "none",
           opacity: htmlLive ? 1 : 0,
           visibility: htmlLive ? "visible" : "hidden",
+          background: "transparent",
         }}
-        zIndexRange={[20, 0]}
+        zIndexRange={[10, 1]}
       >
         <div
           style={{
@@ -124,10 +133,10 @@ function RoomStoryboards({
   const look = roomLookSign(index);
   // Screen-right wall when looking down the gallery (matches the dock camera).
   const rightSign = -look;
-  const boardX = cx + rightSign * (halfW - 0.2);
+  const boardX = cx + rightSign * (halfW - GALLERY_BOARD_INSET);
   const boardRotY = rightSign < 0 ? Math.PI / 2 : -Math.PI / 2;
   const leftSign = look;
-  const videoX = cx + leftSign * (halfW - 0.2);
+  const videoX = cx + leftSign * (halfW - GALLERY_BOARD_INSET);
   const videoRotY = leftSign < 0 ? Math.PI / 2 : -Math.PI / 2;
 
   if (!Card) return null;
@@ -135,7 +144,7 @@ function RoomStoryboards({
   return (
     <>
       <WallHtmlBoard
-        position={[boardX, cy + 2.12, cz]}
+        position={[boardX, cy + GALLERY_BOARD_CENTER_Y, cz]}
         rotationY={boardRotY}
         theme={theme}
         htmlLive={htmlLive}
@@ -144,7 +153,7 @@ function RoomStoryboards({
       </WallHtmlBoard>
       {room.id === "welcome" ? (
         <WallHtmlBoard
-          position={[videoX, cy + 2.12, cz]}
+          position={[videoX, cy + GALLERY_BOARD_CENTER_Y, cz]}
           rotationY={videoRotY}
           theme={theme}
           htmlLive={htmlLive}

@@ -1,3 +1,6 @@
+import {
+  getGalleryWallForRoom,
+} from "@/journey/camera/galleryWallStore";
 import { createLinearRouteCurve } from "@/journey/path/routeCurve";
 import {
   FINISH_WALL_FRAME,
@@ -64,7 +67,50 @@ function roomAtDockT(dockT: number): StoryRoom | undefined {
   return STORY_ROOMS[best];
 }
 
-/** Stand behind the visitor and look toward the next gallery / stair. */
+/** Match CorridorExhibits wall-board placement. */
+export const GALLERY_BOARD_CENTER_Y = 2.12;
+export const GALLERY_BOARD_INSET = 0.2;
+/** Stand this far back from the exhibit wall (robot / first-person view). */
+const WALL_STAND_BACK = 4.35;
+
+function galleryWallSign(
+  index: number,
+  wall: "left" | "right",
+): number {
+  const look = roomLookSign(index);
+  return wall === "left" ? look : -look;
+}
+
+/**
+ * Centered first-person framing at the exhibit wall
+ * (camera stands where Nav would look — no side offset).
+ */
+function galleryWallFraming(room: StoryRoom): {
+  camX: number;
+  camY: number;
+  camZ: number;
+  lookX: number;
+  lookY: number;
+  lookZ: number;
+  wallSign: number;
+} {
+  const index = STORY_ROOMS.findIndex((item) => item.id === room.id);
+  const wall = getGalleryWallForRoom(room.id);
+  const wallSign = galleryWallSign(index, wall);
+  const [cx, cy, cz] = room.center;
+  const wallX = cx + wallSign * (room.size[0] / 2 - GALLERY_BOARD_INSET);
+  return {
+    camX: wallX - wallSign * WALL_STAND_BACK,
+    camY: cy + EYE_HEIGHT,
+    camZ: cz,
+    lookX: wallX,
+    lookY: cy + GALLERY_BOARD_CENTER_Y,
+    lookZ: cz,
+    wallSign,
+  };
+}
+
+/** Stand at the wall and look straight at the board (Nav's view). */
 export function poseAtDock(
   dockT: number,
   outPos: Vector3,
@@ -75,13 +121,9 @@ export function poseAtDock(
     poseAlongRoute(dockT, outPos, outLook);
     return;
   }
-  const [cx, cy, cz] = room.center;
-  const index = STORY_ROOMS.findIndex((item) => item.id === room.id);
-  const sign = roomLookSign(index);
-  outPos.set(cx, cy + EYE_HEIGHT, cz - sign * BEHIND_METERS);
-  // Look down the gallery so both side walls peek: story on the right,
-  // welcome video on the left.
-  outLook.set(cx, cy + EYE_HEIGHT * 0.92, cz + sign * 5.2);
+  const frame = galleryWallFraming(room);
+  outPos.set(frame.camX, frame.camY, frame.camZ);
+  outLook.set(frame.lookX, frame.lookY, frame.lookZ);
 }
 
 /**

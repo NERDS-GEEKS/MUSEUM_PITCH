@@ -10,6 +10,7 @@ import {
   smoothstep01,
 } from "@/journey/camera/dockPose";
 import { getActiveNode, JOURNEY_NODES } from "@/journey/constants/nodes";
+import { getGalleryWallForRoom } from "@/journey/camera/galleryWallStore";
 import { isInteractiveTarget } from "@/journey/input/isInteractiveTarget";
 import {
   beginGalleryGesture,
@@ -324,8 +325,9 @@ export function JourneyCamera({
     }
 
     const active = getActiveNode(progress);
-    if (dockIdRef.current !== active.id) {
-      dockIdRef.current = active.id;
+    const wallKey = `${active.id}:${getGalleryWallForRoom(active.id)}`;
+    if (dockIdRef.current !== wallKey) {
+      dockIdRef.current = wallKey;
       lookYawRef.current = 0;
       lookPitchRef.current = 0;
       lookYawTargetRef.current = 0;

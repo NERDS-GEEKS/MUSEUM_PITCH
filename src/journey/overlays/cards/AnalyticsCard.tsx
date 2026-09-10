@@ -3,14 +3,8 @@ import {
   BUSINESS_OUTCOMES,
 } from "@/constants/analytics";
 import { DestinationCard } from "@/journey/overlays/DestinationCard";
-import { cn } from "@/utils/cn";
-import { useState } from "react";
 
 export function AnalyticsCard() {
-  const [selectedGallery, setSelectedGallery] = useState<string>(
-    BUSINESS_IMPROVEMENTS[0],
-  );
-
   return (
     <DestinationCard
       title="Every Visitor Journey Becomes an Insight"
@@ -39,26 +33,13 @@ export function AnalyticsCard() {
         className="mt-2 flex shrink-0 flex-wrap gap-1.5"
         aria-label="Museum intelligence insights"
       >
-        {BUSINESS_IMPROVEMENTS.map((item) => {
-          const selected = selectedGallery === item;
-          return (
-            <li key={item}>
-              <button
-                type="button"
-                onClick={() => setSelectedGallery(item)}
-                aria-pressed={selected}
-                className={cn(
-                  "rounded-full border px-2.5 py-1 text-[11px] font-medium tracking-wide",
-                  selected
-                    ? "border-[#6ecfc8]/55 bg-[#6ecfc8]/15 text-nm-text"
-                    : "border-nm-border/80 bg-nm-secondary/60 text-nm-muted hover:border-nm-border",
-                )}
-              >
-                {item}
-              </button>
-            </li>
-          );
-        })}
+        {BUSINESS_IMPROVEMENTS.map((item) => (
+          <li key={item}>
+            <span className="inline-flex rounded-full border border-nm-border/80 bg-nm-secondary/60 px-2.5 py-1 text-[11px] font-medium tracking-wide text-nm-muted">
+              {item}
+            </span>
+          </li>
+        ))}
       </ul>
     </DestinationCard>
   );

@@ -1,9 +1,12 @@
 import {
   getActiveNode,
-  getNextNode,
-  getPrevNode,
   JOURNEY_NODES,
 } from "@/journey/constants/nodes";
+import {
+  resolveGalleryStep,
+  setWelcomeBeat,
+  useWelcomeBeat,
+} from "@/journey/camera/galleryWallStore";
 import { closeDestinationDetail } from "@/journey/overlays/destinationDetailStore";
 import { useDestinationDetail } from "@/journey/overlays/useDestinationDetail";
 import {
@@ -21,21 +24,21 @@ export function SectionArrowNav() {
   const { setProgress } = useJourneyProgressApi();
   const { isOpen, close } = useDestinationDetail();
   const active = getActiveNode(progress);
-  const prev = getPrevNode(progress);
-  const next = getNextNode(progress);
+  const welcomeBeat = useWelcomeBeat();
+  const index = JOURNEY_NODES.findIndex((node) => node.id === active.id);
+  const prevStep = resolveGalleryStep(-1, Math.max(0, index));
+  const nextStep = resolveGalleryStep(1, Math.max(0, index));
 
   if (active.id === "complete") return null;
 
-  const atFirst =
-    active.id === JOURNEY_NODES[0].id && progress <= active.dockT + 0.01;
-  const atLast =
-    active.id === JOURNEY_NODES[JOURNEY_NODES.length - 1].id &&
-    progress >= active.dockT - 0.01;
-
-  const goTo = (dockT: number) => {
+  const goStep = (dir: 1 | -1) => {
+    const resolved = resolveGalleryStep(dir, index);
+    if (!resolved) return;
     if (isOpen) close();
     else closeDestinationDetail();
-    setProgress(dockT);
+    setWelcomeBeat(resolved.welcomeBeat);
+    if (resolved.stopIndex === index) return;
+    setProgress(JOURNEY_NODES[resolved.stopIndex].dockT);
   };
 
   return (
@@ -43,14 +46,15 @@ export function SectionArrowNav() {
       className="pointer-events-none fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 z-[60] flex -translate-x-1/2 items-center gap-3 pb-3 sm:bottom-10 sm:gap-4 md:bottom-12"
       role="navigation"
       aria-label="Scroll through the journey"
+      data-welcome-beat={welcomeBeat}
     >
       <div className="pointer-events-auto">
         <NavMeArrowButton
           direction="down"
           size="sm"
           label="Scroll down · Previous stop"
-          disabled={atFirst && prev.id === active.id}
-          onClick={() => goTo(prev.dockT)}
+          disabled={!prevStep}
+          onClick={() => goStep(-1)}
         />
       </div>
       <div className="pointer-events-auto">
@@ -58,8 +62,8 @@ export function SectionArrowNav() {
           direction="up"
           size="md"
           label="Scroll up · Next stop"
-          disabled={atLast && next.id === active.id}
-          onClick={() => goTo(next.dockT)}
+          disabled={!nextStep}
+          onClick={() => goStep(1)}
         />
       </div>
     </div>

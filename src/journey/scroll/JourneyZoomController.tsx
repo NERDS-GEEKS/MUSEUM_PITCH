@@ -1,3 +1,7 @@
+import {
+  resolveGalleryStep,
+  setWelcomeBeat,
+} from "@/journey/camera/galleryWallStore";
 import { getActiveNode, JOURNEY_NODES } from "@/journey/constants/nodes";
 import { isInteractiveTarget } from "@/journey/input/isInteractiveTarget";
 import {
@@ -177,18 +181,11 @@ export function JourneyZoomController({
       const busy = Math.abs(targetRef.current - current) > 0.003;
       const baseProgress = busy ? targetRef.current : current;
       const idx = stopIndexForProgress(baseProgress);
-      const node = JOURNEY_NODES[idx];
-
-      // First POI: swipe / scroll up only (no previous stop).
-      if (idx === 0 && dir === -1) return;
-
-      // Connect mural: swipe / scroll down leaves; up does nothing (end of journey).
-      if (node?.id === "complete") {
-        if (dir === -1) goToStop(idx - 1);
-        return;
-      }
-
-      goToStop(idx + dir);
+      const resolved = resolveGalleryStep(dir, idx);
+      if (!resolved) return;
+      setWelcomeBeat(resolved.welcomeBeat);
+      if (resolved.stopIndex === idx) return;
+      goToStop(resolved.stopIndex);
     };
 
     const animateTo = (t: number) => {

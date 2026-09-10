@@ -2,6 +2,7 @@ import logo from "@/assets/logo.png";
 import { CALENDLY_DEMO_URL } from "@/constants/contact";
 import { JOURNEY_NODES } from "@/journey/constants/nodes";
 import { setFinishCreditsTarget } from "@/journey/opening/finishCreditsStore";
+import { setWelcomeBeat } from "@/journey/camera/galleryWallStore";
 import { closeDestinationDetail } from "@/journey/overlays/destinationDetailStore";
 import {
   useActiveNodeId,
@@ -335,6 +336,8 @@ export function JourneyHUD() {
   }, [open]);
 
   const goTo = (dockT: number) => {
+    const node = JOURNEY_NODES.find((item) => item.dockT === dockT);
+    if (node?.id === "welcome") setWelcomeBeat("video");
     setFinishCreditsTarget(0);
     closeDestinationDetail();
     setOpen(false);
