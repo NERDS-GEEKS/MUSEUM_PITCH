@@ -10,10 +10,12 @@ import {
 import {
   DOOR_WIDTH,
   FLOOR_RISE,
+  HALL_WALL_T,
   HALL_WIDTH,
   ROOM_WALL_H,
   STORY_ROOMS,
   buildHallSegments,
+  buildHallWalls,
   floorFromY,
   roomOpenings,
   type StoryRoom,
@@ -30,7 +32,7 @@ const CEILING = MUSEUM.ceiling;
 const FOG = MUSEUM.fog;
 
 const WALL_H = ROOM_WALL_H;
-const WALL_T = 0.28;
+const WALL_T = HALL_WALL_T;
 
 function WallBox({
   position,
@@ -50,6 +52,9 @@ function WallBox({
         color={wall}
         emissive={emissive}
         emissiveIntensity={0.12}
+        polygonOffset
+        polygonOffsetFactor={1}
+        polygonOffsetUnits={1}
       />
     </mesh>
   );
@@ -303,15 +308,14 @@ function RoomShell({
 function HallShell({
   center,
   size,
-  open = false,
 }: {
   center: [number, number, number];
   size: [number, number];
-  open?: boolean;
 }) {
   const [cx, cy, cz] = center;
   const [w, d] = size;
   if (w < 0.5 || d < 0.5) return null;
+  const alongZ = d >= w;
 
   return (
     <group position={[0, cy, 0]}>
@@ -323,13 +327,18 @@ function HallShell({
         <planeGeometry args={[w, d]} />
         <meshStandardMaterial color={FLOOR} roughness={0.92} metalness={0.02} />
       </mesh>
-      {/* Runner */}
       <mesh
         rotation={[-Math.PI / 2, 0, 0]}
         position={[cx, 0.018, cz]}
         receiveShadow
       >
-        <planeGeometry args={[Math.min(0.38, w * 0.35), d * 0.92]} />
+        <planeGeometry
+          args={
+            alongZ
+              ? [Math.min(0.38, w * 0.35), d * 0.92]
+              : [w * 0.92, Math.min(0.38, d * 0.35)]
+          }
+        />
         <meshStandardMaterial
           color={MUSEUM.runner}
           roughness={0.85}
@@ -337,27 +346,17 @@ function HallShell({
         />
       </mesh>
       <mesh position={[cx, WALL_H, cz]}>
-        <boxGeometry args={[w + 0.15, 0.12, d + 0.15]} />
+        <boxGeometry args={[w, 0.12, d]} />
         <meshStandardMaterial
           color={CEILING}
           roughness={0.8}
           emissive={MUSEUM.ceilingEmissive}
           emissiveIntensity={0.18}
+          polygonOffset
+          polygonOffsetFactor={1}
+          polygonOffsetUnits={1}
         />
       </mesh>
-      {/* Long north–south halls get side walls; short east–west spans use room walls. */}
-      {!open && d >= w ? (
-        <>
-          <WallBox
-            position={[cx - w / 2, WALL_H / 2, cz]}
-            size={[WALL_T, WALL_H, d]}
-          />
-          <WallBox
-            position={[cx + w / 2, WALL_H / 2, cz]}
-            size={[WALL_T, WALL_H, d]}
-          />
-        </>
-      ) : null}
     </group>
   );
 }
@@ -368,6 +367,9 @@ export function World() {
   const stairs = useRevealedStairHalls();
   const halls = buildHallSegments().filter(
     (h) => floorFromY(h.center[1]) === visibleFloor,
+  );
+  const hallWalls = buildHallWalls().filter(
+    (wall) => floorFromY(wall.position[1] - WALL_H / 2) === visibleFloor,
   );
   const rooms = STORY_ROOMS.filter((room) => room.floor === visibleFloor);
   const midZ =
@@ -398,7 +400,13 @@ export function World() {
           key={`hall-${i}`}
           center={h.center}
           size={h.size}
-          open={h.open}
+        />
+      ))}
+      {hallWalls.map((wall, i) => (
+        <WallBox
+          key={`hall-wall-${i}`}
+          position={wall.position}
+          size={wall.size}
         />
       ))}
 

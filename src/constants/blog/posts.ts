@@ -29,7 +29,7 @@ export const BLOG_POSTS: BlogPost[] = [
       },
       {
         type: "p",
-        text: "NavMe is built around scan-and-go. A QR code at an entrance or kiosk opens a browser-based session—no install, no store listing, no onboarding flow. The visitor picks a destination and follows AR directions using the camera they already carry.",
+        text: "NavMe is built around scan-and-go. A QR code at an entrance or kiosk opens a browser-based session: no install, no store listing, no onboarding flow. The visitor picks a destination and follows AR directions using the camera they already carry.",
       },
       {
         type: "h2",
@@ -43,7 +43,7 @@ export const BLOG_POSTS: BlogPost[] = [
         type: "ul",
         items: [
           "Lower barrier at the door: scan, choose destination, navigate",
-          "Easier rollout for curators—update exhibits without app review delays",
+          "Easier rollout for curators: update exhibits without app review delays",
           "Consistent experience whether the visitor is a first-timer or a regular",
         ],
       },
@@ -65,7 +65,7 @@ export const BLOG_POSTS: BlogPost[] = [
     blocks: [
       {
         type: "p",
-        text: "Indoor navigation is often treated as a convenience feature—help visitors find Space Gallery or the nearest facility. That is essential, but the same spatial infrastructure can surface patterns museum directors rarely see from floor plans alone.",
+        text: "Indoor navigation is often treated as a convenience feature: help visitors find Space Gallery or the nearest facility. That is essential, but the same spatial infrastructure can surface patterns museum directors rarely see from floor plans alone.",
       },
       {
         type: "h2",
@@ -85,7 +85,7 @@ export const BLOG_POSTS: BlogPost[] = [
       },
       {
         type: "p",
-        text: "MetaDigi Labs builds NavMe with museum directors in mind: navigation for the visitor, spatial insight for the institution. Privacy remains central—aggregated analytics by default, with clear boundaries when a customer configures deeper retention for their own operational needs.",
+        text: "MetaDigi Labs builds NavMe with museum directors in mind: navigation for the visitor, spatial insight for the institution. Privacy remains central: aggregated analytics by default, with clear boundaries when a customer configures deeper retention for their own operational needs.",
       },
     ],
   },
@@ -109,7 +109,7 @@ export const BLOG_POSTS: BlogPost[] = [
       },
       {
         type: "p",
-        text: "Visual positioning uses the device camera to recognize features in the environment—doorways, signage, structural elements—and align the visitor within a digital model of the venue. NavMe renders AR arrows and labels that stay tied to real-world geometry as people move.",
+        text: "Visual positioning uses the device camera to recognize features in the environment (doorways, signage, structural elements) and align the visitor within a digital model of the venue. NavMe renders AR arrows and labels that stay tied to real-world geometry as people move.",
       },
       {
         type: "p",
@@ -149,7 +149,7 @@ export const BLOG_POSTS: BlogPost[] = [
       },
       {
         type: "p",
-        text: "NavMe addresses the full stack—browser-based sessions, a Digital Twin for AR guidance, and dashboards for curators to keep exhibits current. GPS got visitors to the building; museum exploration gets them to the right gallery without frustration.",
+        text: "NavMe addresses the full stack: browser-based sessions, a Digital Twin for AR guidance, and dashboards for curators to keep exhibits current. GPS got visitors to the building; museum exploration gets them to the right gallery without frustration.",
       },
       {
         type: "ul",

@@ -15,7 +15,7 @@ export const WORKS_STEPS = [
     id: "navigate",
     title: "Navigate",
     description:
-      "Follow a live route across the museum floor—fastest, accessible, family, or highlights.",
+      "Follow a live route across the museum floor: fastest, accessible, family, or highlights.",
   },
   {
     id: "discover",

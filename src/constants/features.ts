@@ -3,14 +3,14 @@ export const FEATURES = [
     id: "camera",
     title: "Digital Twin",
     description:
-      "Capture the complete museum as a navigable 3D Digital Twin—the foundation for AR, navigation, and analytics.",
+      "Capture the complete museum as a navigable 3D Digital Twin, the foundation for AR, navigation, and analytics.",
     accent: "camera",
   },
   {
     id: "ai",
     title: "Museum Exploration",
     description:
-      "Real-time indoor navigation across galleries, exhibits, and facilities—no app required.",
+      "Real-time indoor navigation across galleries, exhibits, and facilities. No app required.",
     accent: "ai",
   },
   {

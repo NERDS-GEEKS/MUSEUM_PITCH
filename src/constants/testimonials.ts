@@ -2,7 +2,7 @@ export const TESTIMONIALS = [
   {
     id: "museum-director",
     quote:
-      "We finally see how visitors move through galleries—not just how many tickets we sold. The Digital Twin made wayfinding and engagement measurable.",
+      "We finally see how visitors move through galleries, not just how many tickets we sold. The Digital Twin made wayfinding and engagement measurable.",
     role: "Museum Director",
   },
   {

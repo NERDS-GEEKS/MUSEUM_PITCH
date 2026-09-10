@@ -18,6 +18,7 @@ import {
   lookPitchFromPointerDy,
   lookYawFromPointerDx,
   resolveGalleryGesture,
+  wrapAngle,
 } from "@/journey/input/lookDragStore";
 import {
   getFinishCredits,
@@ -56,12 +57,12 @@ const _currentLook = new Vector3();
 const _lookDir = new Vector3();
 const _up = new Vector3(0, 1, 0);
 
-const LOOK_YAW_SENS = 0.0044;
-const LOOK_PITCH_SENS = 0.0034;
-const LOOK_YAW_SENS_TOUCH = 0.0036;
-const LOOK_YAW_MAX = 0.95;
-const LOOK_PITCH_MIN = -0.62;
-const LOOK_PITCH_MAX = 0.7;
+const LOOK_YAW_SENS = 0.0048;
+const LOOK_PITCH_SENS = 0.0036;
+const LOOK_YAW_SENS_TOUCH = 0.004;
+const LOOK_PITCH_SENS_TOUCH = 0.003;
+const LOOK_PITCH_MIN = -1.15;
+const LOOK_PITCH_MAX = 1.15;
 /** Damp look offsets toward the finger/mouse target. */
 const LOOK_SMOOTH = 18;
 
@@ -204,15 +205,12 @@ export function JourneyCamera({
       lastPtrRef.current.y = event.clientY;
       const touch = event.pointerType !== "mouse";
       const yawSens = touch ? LOOK_YAW_SENS_TOUCH : LOOK_YAW_SENS;
-      lookYawTargetRef.current = MathUtils.clamp(
+      const pitchSens = touch ? LOOK_PITCH_SENS_TOUCH : LOOK_PITCH_SENS;
+      lookYawTargetRef.current = wrapAngle(
         lookYawTargetRef.current + lookYawFromPointerDx(dx, yawSens),
-        -LOOK_YAW_MAX,
-        LOOK_YAW_MAX,
       );
-      if (touch) return;
       lookPitchTargetRef.current = MathUtils.clamp(
-        lookPitchTargetRef.current +
-          lookPitchFromPointerDy(dy, LOOK_PITCH_SENS),
+        lookPitchTargetRef.current + lookPitchFromPointerDy(dy, pitchSens),
         LOOK_PITCH_MIN,
         LOOK_PITCH_MAX,
       );
@@ -362,6 +360,9 @@ export function JourneyCamera({
         delta,
       );
     }
+
+    lookYawTargetRef.current = wrapAngle(lookYawTargetRef.current);
+    lookYawRef.current = wrapAngle(lookYawRef.current);
 
     lookYawRef.current = MathUtils.damp(
       lookYawRef.current,

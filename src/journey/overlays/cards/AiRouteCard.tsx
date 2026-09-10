@@ -108,7 +108,7 @@ export function AiRouteCard() {
       </ul>
 
       <p className="mb-3 hidden text-[10px] leading-snug text-nm-muted sm:mb-4 sm:block sm:text-[11px] md:text-xs [@media(max-height:640px)]:hidden">
-        The exploded-view animation triggers as you scroll—printed labels become
+        The exploded-view animation triggers as you scroll. Printed labels become
         living science.
       </p>
 

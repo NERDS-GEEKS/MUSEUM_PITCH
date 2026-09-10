@@ -53,7 +53,7 @@ export const JOURNEY_NODES: readonly JourneyNode[] = [
     1,
     "NavMe",
     "A Spatial AI Layer for Physical Spaces",
-    "NavMe connects physical museums with a digital experience layer — helping visitors navigate, discover, learn and engage, while enabling museums to understand how their spaces are explored and experienced.",
+    "NavMe connects physical museums with a digital experience layer, helping visitors navigate, discover, learn and engage, while enabling museums to understand how their spaces are explored and experienced.",
     "peak",
   ),
   node(
@@ -77,7 +77,7 @@ export const JOURNEY_NODES: readonly JourneyNode[] = [
     4,
     "Don't Just Show Visitors the Way. Give Them a Reason to Explore.",
     "Navigate",
-    'From "Where do I go?" to "What can I discover next?" — Find, Discover, Learn, Engage, and Continue through every gallery.',
+    'From "Where do I go?" to "What can I discover next?": Find, Discover, Learn, Engage, and Continue through every gallery.',
     "peak",
   ),
   node(
@@ -93,7 +93,7 @@ export const JOURNEY_NODES: readonly JourneyNode[] = [
     6,
     "Transform Traditional Museums into AR Museums",
     "Convert",
-    "Physical Museum → Digital Twin → AR Experience Layer → Intelligent Museum — the complete museum transformation.",
+    "Physical Museum → Digital Twin → AR Experience Layer → Intelligent Museum: the complete museum transformation.",
     "peak",
   ),
   node(

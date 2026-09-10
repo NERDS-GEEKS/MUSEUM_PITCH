@@ -37,32 +37,32 @@ export type StoryGalleryItem = {
 export const CAPABILITY_IMAGES: readonly StoryGalleryItem[] = [
   {
     id: "find",
-    title: "Step 1 — Find",
+    title: "Step 1: Find",
     description:
       '"Take me to the Modern Art Gallery." An animated AR navigation path lights across the museum floor.',
     src: capabilityRouteOptimizationImg,
   },
   {
     id: "discover",
-    title: "Step 2 — Discover",
+    title: "Step 2: Discover",
     description: "Nearby exhibits illuminate automatically.",
     src: capabilityInteractiveMapsImg,
   },
   {
     id: "learn",
-    title: "Step 3 — Learn",
+    title: "Step 3: Learn",
     description: "Reveal stories, artists, history, audio and multimedia.",
     src: capabilitySmartSearchImg,
   },
   {
     id: "engage",
-    title: "Step 4 — Engage",
+    title: "Step 4: Engage",
     description: "Interactive AR trails, quizzes and themed journeys.",
     src: capabilityOpsImg,
   },
   {
     id: "continue",
-    title: "Step 5 — Continue",
+    title: "Step 5: Continue",
     description:
       "Recommend the next exhibit based on the visitor's journey.",
     src: mappingImg,

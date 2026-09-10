@@ -9,6 +9,7 @@ import {
   resolveGalleryGesture,
   travelDirFromTouchDy,
   travelDirFromWheelDelta,
+  wrapAngle,
 } from "./lookDragStore";
 
 afterEach(() => {
@@ -54,5 +55,10 @@ describe("look and travel directions", () => {
   it("treats swipe up as next gallery", () => {
     expect(travelDirFromTouchDy(30)).toBe(1);
     expect(travelDirFromTouchDy(-30)).toBe(-1);
+  });
+
+  it("wraps yaw so a full circle is not clamped", () => {
+    expect(wrapAngle(Math.PI * 2 + 0.2)).toBeCloseTo(0.2, 5);
+    expect(wrapAngle(-Math.PI - 0.1)).toBeCloseTo(Math.PI - 0.1, 5);
   });
 });

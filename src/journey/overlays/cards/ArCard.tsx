@@ -43,7 +43,7 @@ export function ArCard() {
     <DestinationCard
       title="One Museum. Five Different Experiences."
       subtitle="Personalized Visits"
-      body="Changing a visitor persona redraws the museum path dynamically—the same Digital Twin, five learning journeys."
+      body="Changing a visitor persona redraws the museum path dynamically: the same Digital Twin, five learning journeys."
     >
       <ol
         className={cn(storyItemGridClass(LAYERS.length), "min-h-0 flex-1")}

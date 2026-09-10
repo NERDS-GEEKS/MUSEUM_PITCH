@@ -42,7 +42,7 @@ export function AiTechnology() {
           <SectionHeading
             eyebrow="Use Cases"
             title="Real-World Museum Experiences"
-            description="NavMe adapts to science museums, technology museums, and cultural institutions—helping visitors, students, and directors."
+            description="NavMe adapts to science museums, technology museums, and cultural institutions, helping visitors, students, and directors."
           />
         </SectionReveal>
 

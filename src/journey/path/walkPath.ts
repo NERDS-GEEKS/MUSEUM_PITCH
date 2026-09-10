@@ -17,10 +17,12 @@ export type StoryRoom = {
   floor: MuseumFloor;
 };
 
-export const CORRIDOR_HALF_WIDTH = 1.85;
-export const HALL_WIDTH = CORRIDOR_HALF_WIDTH * 2;
-export const ROOM_WALL_H = 4.2;
 export const DOOR_WIDTH = 2.8;
+/** Inner corridor width matches the doorway so hall faces and jambs share an edge. */
+export const HALL_WIDTH = DOOR_WIDTH;
+export const CORRIDOR_HALF_WIDTH = HALL_WIDTH / 2;
+export const ROOM_WALL_H = 4.2;
+export const HALL_WALL_T = 0.28;
 
 /** Rise between museum floors (clears a 4.2m gallery + slab). */
 export const FLOOR_RISE = 4.8;
@@ -690,37 +692,68 @@ export function finishWallCamera(
 export type HallSegment = {
   center: [number, number, number];
   size: [number, number];
-  /** Open gallery floor — no corridor side walls. Unused; every floor is walled. */
+  /** Open gallery floor. Unused; every floor is walled. */
   open?: boolean;
 };
+
+export type HallWallBox = {
+  position: [number, number, number];
+  size: [number, number, number];
+};
+
+type HallSpine = {
+  ax: number;
+  az: number;
+  bx: number;
+  bz: number;
+  y: number;
+};
+
+type Cardinal = "n" | "s" | "e" | "w";
 
 /** Every storey uses enclosed rooms with doorways, including slides 6–7. */
 export function isOpenGalleryFloor(_floor: MuseumFloor): boolean {
   return false;
 }
 
-export function buildHallSegments(): HallSegment[] {
-  const halls: HallSegment[] = [];
-  halls.push({
-    center: [0, 0, 0.5],
-    size: [HALL_WIDTH, 6],
-  });
+function nearHall(a: number, b: number): boolean {
+  return Math.abs(a - b) < 0.25;
+}
 
+function spineAlongZ(spine: HallSpine): boolean {
+  return Math.abs(spine.bz - spine.az) >= Math.abs(spine.bx - spine.ax);
+}
+
+function pushSpine(
+  spines: HallSpine[],
+  ax: number,
+  az: number,
+  bx: number,
+  bz: number,
+  y: number,
+): void {
+  if (Math.hypot(bx - ax, bz - az) < 0.35) return;
+  spines.push({ ax, az, bx, bz, y });
+}
+
+function spineToSegment(spine: HallSpine): HallSegment {
+  const dx = spine.bx - spine.ax;
+  const dz = spine.bz - spine.az;
+  const alongZ = Math.abs(dz) >= Math.abs(dx);
+  return {
+    center: [(spine.ax + spine.bx) / 2, spine.y, (spine.az + spine.bz) / 2],
+    size: alongZ
+      ? [HALL_WIDTH, Math.max(HALL_WIDTH, Math.abs(dz))]
+      : [Math.max(HALL_WIDTH, Math.abs(dx)), HALL_WIDTH],
+  };
+}
+
+function buildHallSpines(): HallSpine[] {
+  const spines: HallSpine[] = [];
   const first = STORY_ROOMS[0];
   const firstDoorZ = first.center[2] - first.size[1] / 2;
-  const approachMidZ = firstDoorZ / 2;
-  halls.push({
-    center: [0, 0, approachMidZ],
-    size: [HALL_WIDTH, Math.max(2, Math.abs(firstDoorZ) + 0.6)],
-  });
-  halls.push({
-    center: [first.center[0] / 2, 0, firstDoorZ],
-    size: [Math.abs(first.center[0]) + HALL_WIDTH, HALL_WIDTH],
-  });
-  halls.push({
-    center: [first.center[0], 0, firstDoorZ],
-    size: [HALL_WIDTH, HALL_WIDTH],
-  });
+  pushSpine(spines, 0, -3, 0, firstDoorZ, 0);
+  pushSpine(spines, 0, firstDoorZ, first.center[0], firstDoorZ, 0);
 
   for (let i = 1; i < STORY_ROOMS.length; i++) {
     const prev = STORY_ROOMS[i - 1];
@@ -730,7 +763,6 @@ export function buildHallSegments(): HallSegment[] {
     const y = curr.center[1];
     const dx = curr.center[0] - prev.center[0];
     const dz = curr.center[2] - prev.center[2];
-    const open = isOpenGalleryFloor(prev.floor);
 
     if (Math.abs(dz) < 1 && Math.abs(dx) > 0.2) {
       const fromX =
@@ -741,11 +773,8 @@ export function buildHallSegments(): HallSegment[] {
         dx > 0
           ? curr.center[0] - curr.size[0] / 2
           : curr.center[0] + curr.size[0] / 2;
-      halls.push({
-        center: [(fromX + toX) / 2, y, (prev.center[2] + curr.center[2]) / 2],
-        size: [Math.max(1, Math.abs(toX - fromX)), ROOM_D],
-        open,
-      });
+      const z = (prev.center[2] + curr.center[2]) / 2;
+      pushSpine(spines, fromX, z, toX, z, y);
       continue;
     }
 
@@ -757,33 +786,203 @@ export function buildHallSegments(): HallSegment[] {
       ? curr.center[2] - curr.size[1] / 2
       : curr.center[2] + curr.size[1] / 2;
     const midZ = (prevDoorZ + currDoorZ) / 2;
-    const gap = Math.abs(currDoorZ - prevDoorZ);
+    const sameX = Math.abs(dx) < 0.4;
 
-    const x0 = Math.min(prev.center[0], curr.center[0]);
-    const x1 = Math.max(prev.center[0], curr.center[0]);
+    if (sameX) {
+      pushSpine(
+        spines,
+        prev.center[0],
+        prevDoorZ,
+        curr.center[0],
+        currDoorZ,
+        y,
+      );
+      continue;
+    }
 
-    halls.push({
-      center: [(x0 + x1) / 2, y, midZ],
-      size: [
-        Math.max(ROOM_W, x1 - x0 + (open ? ROOM_W : HALL_WIDTH)),
-        Math.max(open ? 1 : HALL_WIDTH, gap),
-      ],
-      open,
-    });
-
-    if (open) continue;
-
-    halls.push({
-      center: [prev.center[0], y, (prevDoorZ + midZ) / 2],
-      size: [HALL_WIDTH, Math.max(2, Math.abs(midZ - prevDoorZ) + 0.6)],
-    });
-    halls.push({
-      center: [curr.center[0], y, (currDoorZ + midZ) / 2],
-      size: [HALL_WIDTH, Math.max(2, Math.abs(midZ - currDoorZ) + 0.6)],
-    });
+    pushSpine(spines, prev.center[0], prevDoorZ, prev.center[0], midZ, y);
+    pushSpine(spines, prev.center[0], midZ, curr.center[0], midZ, y);
+    pushSpine(spines, curr.center[0], midZ, curr.center[0], currDoorZ, y);
   }
 
-  return halls;
+  return spines;
+}
+
+export function buildHallSegments(): HallSegment[] {
+  return buildHallSpines().map(spineToSegment);
+}
+
+function isInsideStoryRoom(x: number, z: number, y: number): boolean {
+  return STORY_ROOMS.some((room) => {
+    if (Math.abs(room.center[1] - y) > 0.25) return false;
+    const [rw, rd] = room.size;
+    return (
+      Math.abs(x - room.center[0]) < rw / 2 - 0.08 &&
+      Math.abs(z - room.center[2]) < rd / 2 - 0.08
+    );
+  });
+}
+
+function endJoinsPerpendicular(
+  spine: HallSpine,
+  x: number,
+  z: number,
+  spines: HallSpine[],
+): boolean {
+  const alongZ = spineAlongZ(spine);
+  return spines.some((other) => {
+    if (other === spine || Math.abs(other.y - spine.y) > 0.2) return false;
+    if (spineAlongZ(other) === alongZ) return false;
+    return (
+      (nearHall(other.ax, x) && nearHall(other.az, z)) ||
+      (nearHall(other.bx, x) && nearHall(other.bz, z))
+    );
+  });
+}
+
+function markOccupiedFromSpine(
+  spine: HallSpine,
+  jx: number,
+  jz: number,
+  occupied: Record<Cardinal, boolean>,
+): void {
+  const atA = nearHall(spine.ax, jx) && nearHall(spine.az, jz);
+  const ox = atA ? spine.bx : spine.ax;
+  const oz = atA ? spine.bz : spine.az;
+  const dx = ox - jx;
+  const dz = oz - jz;
+  if (Math.abs(dz) >= Math.abs(dx)) {
+    if (dz >= 0) occupied.n = true;
+    else occupied.s = true;
+    return;
+  }
+  if (dx >= 0) occupied.e = true;
+  else occupied.w = true;
+}
+
+function elbowOccupied(
+  a: HallSpine,
+  b: HallSpine,
+): { x: number; z: number; y: number; occupied: Record<Cardinal, boolean> } | null {
+  if (Math.abs(a.y - b.y) > 0.2) return null;
+  if (spineAlongZ(a) === spineAlongZ(b)) return null;
+  const aEnds: Array<[number, number]> = [
+    [a.ax, a.az],
+    [a.bx, a.bz],
+  ];
+  const bEnds: Array<[number, number]> = [
+    [b.ax, b.az],
+    [b.bx, b.bz],
+  ];
+  for (const [ax, az] of aEnds) {
+    for (const [bx, bz] of bEnds) {
+      if (!nearHall(ax, bx) || !nearHall(az, bz)) continue;
+      const occupied: Record<Cardinal, boolean> = {
+        n: false,
+        s: false,
+        e: false,
+        w: false,
+      };
+      markOccupiedFromSpine(a, ax, az, occupied);
+      markOccupiedFromSpine(b, ax, az, occupied);
+      return { x: ax, z: az, y: a.y, occupied };
+    }
+  }
+  return null;
+}
+
+/**
+ * Side walls sit just outside the floor so inner faces are flush with the
+ * corridor edge. Open L-ends are trimmed so a crossing hall is not blocked;
+ * the outer two sides of each landing close the corner.
+ */
+export function buildHallWalls(wallT = HALL_WALL_T): HallWallBox[] {
+  const spines = buildHallSpines();
+  const walls: HallWallBox[] = [];
+  const seen = new Set<string>();
+  const half = HALL_WIDTH / 2;
+  const wallH = ROOM_WALL_H;
+
+  const pushWall = (position: [number, number, number], size: [number, number, number]) => {
+    const floorY = position[1] - wallH / 2;
+    if (isInsideStoryRoom(position[0], position[2], floorY)) return;
+    const key = [...position, ...size].map((n) => n.toFixed(3)).join(",");
+    if (seen.has(key)) return;
+    seen.add(key);
+    walls.push({ position, size });
+  };
+
+  const addNsWalls = (spine: HallSpine) => {
+    const trimA = endJoinsPerpendicular(spine, spine.ax, spine.az, spines);
+    const trimB = endJoinsPerpendicular(spine, spine.bx, spine.bz, spines);
+    let z0 = Math.min(spine.az, spine.bz);
+    let z1 = Math.max(spine.az, spine.bz);
+    const minIsA = spine.az <= spine.bz;
+    const trimMin = minIsA ? trimA : trimB;
+    const trimMax = minIsA ? trimB : trimA;
+    if (trimMin) z0 += half;
+    else z0 -= wallT;
+    if (trimMax) z1 -= half;
+    else z1 += wallT;
+    if (z1 - z0 < 0.2) return;
+    const cz = (z0 + z1) / 2;
+    const len = z1 - z0;
+    const y = spine.y + wallH / 2;
+    pushWall([spine.ax - half - wallT / 2, y, cz], [wallT, wallH, len]);
+    pushWall([spine.ax + half + wallT / 2, y, cz], [wallT, wallH, len]);
+  };
+
+  const addEwWalls = (spine: HallSpine) => {
+    const trimA = endJoinsPerpendicular(spine, spine.ax, spine.az, spines);
+    const trimB = endJoinsPerpendicular(spine, spine.bx, spine.bz, spines);
+    let x0 = Math.min(spine.ax, spine.bx);
+    let x1 = Math.max(spine.ax, spine.bx);
+    const minIsA = spine.ax <= spine.bx;
+    const trimMin = minIsA ? trimA : trimB;
+    const trimMax = minIsA ? trimB : trimA;
+    if (trimMin) x0 += half;
+    else x0 -= wallT;
+    if (trimMax) x1 -= half;
+    else x1 += wallT;
+    if (x1 - x0 < 0.2) return;
+    const cx = (x0 + x1) / 2;
+    const len = x1 - x0;
+    const y = spine.y + wallH / 2;
+    pushWall([cx, y, spine.az - half - wallT / 2], [len, wallH, wallT]);
+    pushWall([cx, y, spine.az + half + wallT / 2], [len, wallH, wallT]);
+  };
+
+  for (const spine of spines) {
+    if (spineAlongZ(spine)) addNsWalls(spine);
+    else addEwWalls(spine);
+  }
+
+  const joints = new Set<string>();
+  for (let i = 0; i < spines.length; i++) {
+    for (let j = i + 1; j < spines.length; j++) {
+      const elbow = elbowOccupied(spines[i], spines[j]);
+      if (!elbow) continue;
+      const id = `${elbow.y.toFixed(2)}:${elbow.x.toFixed(2)}:${elbow.z.toFixed(2)}`;
+      if (joints.has(id)) continue;
+      joints.add(id);
+      const y = elbow.y + wallH / 2;
+      const span = HALL_WIDTH + wallT;
+      if (!elbow.occupied.n) {
+        pushWall([elbow.x, y, elbow.z + half + wallT / 2], [span, wallH, wallT]);
+      }
+      if (!elbow.occupied.s) {
+        pushWall([elbow.x, y, elbow.z - half - wallT / 2], [span, wallH, wallT]);
+      }
+      if (!elbow.occupied.e) {
+        pushWall([elbow.x + half + wallT / 2, y, elbow.z], [wallT, wallH, span]);
+      }
+      if (!elbow.occupied.w) {
+        pushWall([elbow.x - half - wallT / 2, y, elbow.z], [wallT, wallH, span]);
+      }
+    }
+  }
+
+  return walls;
 }
 
 export type RoomOpenings = {

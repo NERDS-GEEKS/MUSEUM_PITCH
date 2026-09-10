@@ -50,7 +50,7 @@ export function HowItWorks() {
           <SectionHeading
             eyebrow="How NavMe works"
             title="How NavMe Works"
-            description="From a simple QR scan to an AR exhibit—NavMe guides every step of the museum learning journey."
+            description="From a simple QR scan to an AR exhibit, NavMe guides every step of the museum learning journey."
           />
         </SectionReveal>
 

@@ -75,7 +75,7 @@ export function FutureSpatial() {
             Building the Future of AR Museums
           </h2>
           <p className="mt-4 text-base text-nm-muted md:text-lg">
-            NavMe does not replace museums. We transform them into AR museums—
+            NavMe does not replace museums. We transform them into AR museums.
             Digital Twins, interactive exhibits, and learning journeys that make
             every collection discoverable, measurable, and unforgettable.
           </p>

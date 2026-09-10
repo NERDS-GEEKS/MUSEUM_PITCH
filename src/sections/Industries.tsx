@@ -59,7 +59,7 @@ export function Industries() {
           <SectionHeading
             eyebrow="Museums"
             title="Built for Museums and Cultural Institutions"
-            description="Science museums, technology museums, government museums, and cultural institutions—NavMe converts traditional galleries into AR experiences."
+            description="Science museums, technology museums, government museums, and cultural institutions. NavMe converts traditional galleries into AR experiences."
           />
         </SectionReveal>
 

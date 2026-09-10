@@ -90,7 +90,7 @@ export function Vps() {
           <SectionHeading
             eyebrow="Platform Technology"
             title="Your Museum. Digitally Recreated."
-            description="NavMe captures the complete museum as a navigable Digital Twin—the foundation for AR experiences, indoor navigation, and visitor analytics."
+            description="NavMe captures the complete museum as a navigable Digital Twin, the foundation for AR experiences, indoor navigation, and visitor analytics."
           />
         </SectionReveal>
 

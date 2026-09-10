@@ -20,7 +20,7 @@ export const FAQ_ITEMS = [
     id: "conversion",
     question: "How does NavMe convert a traditional museum?",
     answer:
-      "NavMe captures the museum as a Digital Twin, then adds indoor navigation, AR exhibits, AI guidance, and visitor analytics—without rebuilding the building.",
+      "NavMe captures the museum as a Digital Twin, then adds indoor navigation, AR exhibits, AI guidance, and visitor analytics without rebuilding the building.",
   },
   {
     id: "cms",

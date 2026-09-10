@@ -1,11 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
+  DOOR_WIDTH,
   FLOOR_RISE,
+  HALL_WALL_T,
+  HALL_WIDTH,
   ROOM_DOCK_T,
+  ROOM_WALL_H,
   STAIR_HALLS,
   STORY_ROOMS,
   STEP_RISE,
   WALK_WAYPOINTS,
+  buildHallSegments,
+  buildHallWalls,
   floorForIndex,
   floorFromY,
   isOpenGalleryFloor,
@@ -194,5 +200,49 @@ describe("gallery walls", () => {
       east: false,
       west: false,
     });
+  });
+
+  it("connects rooms with narrow halls so both long sides can be walled", () => {
+    const halls = buildHallSegments();
+    expect(halls.length).toBeGreaterThan(4);
+    for (const hall of halls) {
+      const [w, d] = hall.size;
+      expect(Math.min(w, d)).toBeCloseTo(HALL_WIDTH, 5);
+    }
+  });
+
+  it("matches hall inner width to the doorway so jambs line up", () => {
+    expect(HALL_WIDTH).toBe(DOOR_WIDTH);
+  });
+
+  it("places hall walls outside the floor so inner faces are flush", () => {
+    const walls = buildHallWalls();
+    const ns = walls.filter(
+      (wall) =>
+        Math.abs(wall.position[1] - ROOM_WALL_H / 2) < 0.05 &&
+        wall.size[0] === HALL_WALL_T &&
+        Math.abs(wall.position[0] + HALL_WIDTH / 2 + HALL_WALL_T / 2) < 0.05,
+    );
+    expect(ns.length).toBeGreaterThan(0);
+  });
+
+  it("does not run a crossing wall through an L-junction opening", () => {
+    const first = STORY_ROOMS[0];
+    const jointZ = first.center[2] - first.size[1] / 2;
+    const walls = buildHallWalls();
+    const wallHit = (
+      x: number,
+      z: number,
+      y: number,
+    ) =>
+      walls.some((wall) => {
+        const [px, py, pz] = wall.position;
+        const [sx, , sz] = wall.size;
+        if (Math.abs(py - (y + ROOM_WALL_H / 2)) > 0.2) return false;
+        return Math.abs(x - px) <= sx / 2 - 0.02 && Math.abs(z - pz) <= sz / 2 - 0.02;
+      });
+
+    expect(wallHit(0, jointZ - HALL_WIDTH * 0.65, 0)).toBe(false);
+    expect(wallHit(-HALL_WIDTH * 0.65, jointZ, 0)).toBe(false);
   });
 });

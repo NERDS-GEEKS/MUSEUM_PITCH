@@ -10,7 +10,7 @@ export function Analytics() {
           <SectionHeading
             eyebrow="Why NavMe"
             title="See How Visitors Experience Your Museum"
-            description="Heatmaps, dwell time, popular paths, and visitor flow—built for museum directors. No GPS, no dedicated hardware, no app install."
+            description="Heatmaps, dwell time, popular paths, and visitor flow, built for museum directors. No GPS, no dedicated hardware, no app install."
           />
         </SectionReveal>
 

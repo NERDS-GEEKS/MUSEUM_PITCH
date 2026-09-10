@@ -64,6 +64,11 @@ export function setLookDragging(next: boolean): void {
   }
 }
 
+/** Keep yaw in -π…π so a full spin does not accumulate huge values. */
+export function wrapAngle(radians: number): number {
+  return Math.atan2(Math.sin(radians), Math.cos(radians));
+}
+
 /** Drag / swipe right looks toward the right-hand wall. */
 export function lookYawFromPointerDx(dx: number, sensitivity: number): number {
   return -dx * sensitivity;

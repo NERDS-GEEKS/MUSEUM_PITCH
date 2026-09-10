@@ -17,7 +17,7 @@ export function BookDemoCard({ onClose }: { onClose?: () => void }) {
       className="max-w-none p-2.5 text-left sm:p-4 md:p-6 lg:p-8 [@media(max-height:720px)]:p-2"
       title="Update Stories Without Rebuilding the Museum."
       subtitle="Curator CMS"
-      body="Curators add exhibits, audio, video, school tours, and temporary exhibitions—without rebuilding the Digital Twin."
+      body="Curators add exhibits, audio, video, school tours, and temporary exhibitions without rebuilding the Digital Twin."
       onClose={onClose}
       showCtas={false}
     >

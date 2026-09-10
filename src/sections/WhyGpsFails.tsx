@@ -10,7 +10,7 @@ export function WhyGpsFails() {
           <SectionHeading
             eyebrow="Why NavMe"
             title="The Future of Museums Is Interactive"
-            description="Traditional museums rely on paper maps and printed labels. NavMe replaces them with a Digital Twin, AR exhibits, and visitor analytics—without rebuilding the museum."
+            description="Traditional museums rely on paper maps and printed labels. NavMe replaces them with a Digital Twin, AR exhibits, and visitor analytics, without rebuilding the museum."
           />
         </SectionReveal>
         <div className="mt-12 md:mt-16">
