@@ -34,12 +34,4 @@ describe("poseAtDock facing", () => {
   it("keeps the finish room looking along the route", () => {
     expect(lookDeltaZ(ROOM_DOCK_T[6])).toBeGreaterThan(2);
   });
-
-  it("on a phone faces the story plaque so the full card is in view", () => {
-    const pos = new Vector3();
-    const look = new Vector3();
-    poseAtDock(ROOM_DOCK_T[0], pos, look, 9 / 19.5);
-    expect(Math.abs(look.x - pos.x)).toBeGreaterThan(3);
-    expect(Math.abs(look.z - pos.z)).toBeLessThan(0.05);
-  });
 });

@@ -1,4 +1,3 @@
-import { storyBoardForAspect } from "@/journey/camera/galleryFrame";
 import { DESTINATION_CARDS } from "@/journey/overlays/cards";
 import { WelcomeVideoPreview } from "@/journey/overlays/cards/WelcomeVideoPreview";
 import { setExperienceVideoOpen } from "@/journey/overlays/experienceVideoStore";
@@ -17,10 +16,13 @@ import {
   useArrivedAtDock,
 } from "@/journey/scroll/useJourneyProgress";
 import { Html } from "@react-three/drei";
-import { useThree } from "@react-three/fiber";
 import { type ReactNode } from "react";
 
-function wallDistanceFactor(worldWidth: number, cssW: number): number {
+const BOARD_CSS_W = 640;
+const BOARD_W = 6.4;
+const BOARD_H = 3.55;
+
+function wallDistanceFactor(worldWidth: number, cssW = BOARD_CSS_W): number {
   return (400 * worldWidth) / cssW;
 }
 
@@ -29,9 +31,6 @@ function WallHtmlBoard({
   rotationY,
   theme,
   htmlLive,
-  worldW,
-  worldH,
-  cssW,
   onBoardClick,
   children,
 }: {
@@ -39,19 +38,17 @@ function WallHtmlBoard({
   rotationY: number;
   theme: GalleryTheme;
   htmlLive: boolean;
-  worldW: number;
-  worldH: number;
-  cssW: number;
   onBoardClick?: () => void;
   children: ReactNode;
 }) {
-  const cssH = Math.max(1, Math.round(cssW * (worldH / worldW)));
-  const distanceFactor = wallDistanceFactor(worldW, cssW);
+  const cssW = BOARD_CSS_W;
+  const cssH = Math.max(1, Math.round(cssW * (BOARD_H / BOARD_W)));
+  const distanceFactor = wallDistanceFactor(BOARD_W, cssW);
 
   return (
     <group position={position} rotation={[0, rotationY, 0]}>
       <mesh position={[0, 0, -0.05]}>
-        <boxGeometry args={[worldW + 0.22, worldH + 0.22, 0.12]} />
+        <boxGeometry args={[BOARD_W + 0.22, BOARD_H + 0.22, 0.12]} />
         <meshStandardMaterial
           color={theme.frame}
           roughness={0.4}
@@ -69,11 +66,11 @@ function WallHtmlBoard({
             : undefined
         }
       >
-        <planeGeometry args={[worldW, worldH]} />
+        <planeGeometry args={[BOARD_W, BOARD_H]} />
         <meshStandardMaterial color="#1c1916" roughness={0.8} />
       </mesh>
-      <mesh position={[0, worldH / 2 + 0.1, 0.04]}>
-        <boxGeometry args={[worldW * 0.42, 0.045, 0.05]} />
+      <mesh position={[0, BOARD_H / 2 + 0.1, 0.04]}>
+        <boxGeometry args={[BOARD_W * 0.42, 0.045, 0.05]} />
         <meshStandardMaterial
           color={theme.light}
           emissive={theme.light}
@@ -119,10 +116,6 @@ function RoomStoryboards({
   room: StoryRoom;
   htmlLive: boolean;
 }) {
-  const { size } = useThree();
-  const aspect =
-    size.width > 0 && size.height > 0 ? size.width / size.height : 16 / 9;
-  const board = storyBoardForAspect(aspect);
   const theme = getGalleryTheme(room.id);
   const Card = DESTINATION_CARDS[room.id];
   const [cx, cy, cz] = room.center;
@@ -142,25 +135,19 @@ function RoomStoryboards({
   return (
     <>
       <WallHtmlBoard
-        position={[boardX, cy + board.centerY, cz]}
+        position={[boardX, cy + 2.12, cz]}
         rotationY={boardRotY}
         theme={theme}
         htmlLive={htmlLive}
-        worldW={board.worldW}
-        worldH={board.worldH}
-        cssW={board.cssW}
       >
         <Card />
       </WallHtmlBoard>
       {room.id === "welcome" ? (
         <WallHtmlBoard
-          position={[videoX, cy + board.centerY, cz]}
+          position={[videoX, cy + 2.12, cz]}
           rotationY={videoRotY}
           theme={theme}
           htmlLive={htmlLive}
-          worldW={board.worldW}
-          worldH={board.worldH}
-          cssW={board.cssW}
           onBoardClick={() => setExperienceVideoOpen(true)}
         >
           <WelcomeVideoPreview />

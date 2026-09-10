@@ -40,7 +40,7 @@ export function DestinationCard({
   return (
     <GlassPanel
       className={cn(
-        "relative flex h-full w-full max-w-none min-w-0 flex-col overflow-hidden rounded-[18px] border-white/12 bg-[rgba(14,12,10,0.94)] p-4 shadow-[0_20px_60px_rgba(0,0,0,0.65)] backdrop-blur-2xl",
+        "relative flex h-full w-full max-w-none min-w-0 flex-col overflow-hidden rounded-[18px] border-white/12 bg-[rgba(14,12,10,0.94)] p-5 shadow-[0_20px_60px_rgba(0,0,0,0.65)] backdrop-blur-2xl",
         className,
       )}
       {...props}
