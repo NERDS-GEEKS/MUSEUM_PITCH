@@ -1,0 +1,425 @@
+import {
+  getActiveNode,
+  JOURNEY_NODES,
+} from "@/journey/constants/nodes";
+import { BillboardArt } from "@/journey/overlays/BillboardArt";
+import { BookDemoCard, DESTINATION_CARDS } from "@/journey/overlays/cards";
+import {
+  getNodeScreenAnchor,
+  subscribeNodeScreenAnchor,
+} from "@/journey/overlays/nodeScreenAnchor";
+import { useDestinationDetail } from "@/journey/overlays/useDestinationDetail";
+import {
+  useDockBandKey,
+  useJourneyProgressStore,
+} from "@/journey/scroll/useJourneyProgress";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  type RefObject,
+} from "react";
+
+/** Progress must be this close to dockT - only after the walk lands. */
+const ARRIVE_EPS = 0.005;
+/** Brief beat after landing before glass UI appears. */
+const REVEAL_DELAY_MS = 320;
+
+/** True when travel has settled on the active dock (no per-frame React thrash). */
+function useArrivedAtDock(): boolean {
+  const store = useJourneyProgressStore();
+  return useSyncExternalStore(
+    (onStoreChange) => store.subscribe(() => onStoreChange()),
+    () => {
+      if (store.travelIntent !== 0) return false;
+      const node = getActiveNode(store.progress);
+      return Math.abs(store.progress - node.dockT) <= ARRIVE_EPS;
+    },
+    () => false,
+  );
+}
+
+function useNodeScreenAnchor() {
+  return useSyncExternalStore(
+    subscribeNodeScreenAnchor,
+    getNodeScreenAnchor,
+    getNodeScreenAnchor,
+  );
+}
+
+/** Lower-center fallback when the robot is off-screen. */
+function fallbackOrigin() {
+  const vw = typeof window === "undefined" ? 1200 : window.innerWidth;
+  const vh = typeof window === "undefined" ? 800 : window.innerHeight;
+  return { x: vw * 0.58, y: vh * 0.62 };
+}
+
+function clampOrigin(x: number, y: number) {
+  const vw = typeof window === "undefined" ? 1200 : window.innerWidth;
+  const vh = typeof window === "undefined" ? 800 : window.innerHeight;
+  return {
+    x: Math.min(vw - 24, Math.max(24, x)),
+    y: Math.min(vh - 48, Math.max(vh * 0.28, y)),
+  };
+}
+
+/**
+ * Billboard callout: robot chest → elbow → into the glass panel.
+ * Keeps measuring while open so the line stays locked to Nav.
+ */
+function BillboardCallout({
+  originX,
+  originY,
+  boardRef,
+}: {
+  originX: number;
+  originY: number;
+  boardRef: RefObject<HTMLDivElement | null>;
+}) {
+  const [attach, setAttach] = useState<{ x: number; y: number } | null>(null);
+  const origin = clampOrigin(originX, originY);
+
+  useLayoutEffect(() => {
+    let raf = 0;
+    let alive = true;
+    let lastX = Number.NaN;
+    let lastY = Number.NaN;
+
+    const measure = () => {
+      if (!alive) return;
+      const el = boardRef.current;
+      if (!el) {
+        if (lastX === lastX) {
+          lastX = Number.NaN;
+          lastY = Number.NaN;
+          setAttach(null);
+        }
+        return;
+      }
+      const rect = el.getBoundingClientRect();
+      if (rect.width < 2 || rect.height < 2) {
+        if (lastX === lastX) {
+          lastX = Number.NaN;
+          lastY = Number.NaN;
+          setAttach(null);
+        }
+        return;
+      }
+      const nextX = rect.left;
+      const nextY = rect.top + Math.min(52, rect.height * 0.16);
+      if (
+        Math.abs(nextX - lastX) < 0.5 &&
+        Math.abs(nextY - lastY) < 0.5
+      ) {
+        return;
+      }
+      lastX = nextX;
+      lastY = nextY;
+      setAttach({ x: nextX, y: nextY });
+    };
+
+    const tick = () => {
+      measure();
+      raf = requestAnimationFrame(tick);
+    };
+    tick();
+
+    window.addEventListener("resize", measure);
+    const ro =
+      typeof ResizeObserver !== "undefined"
+        ? new ResizeObserver(measure)
+        : null;
+    if (boardRef.current) ro?.observe(boardRef.current);
+
+    return () => {
+      alive = false;
+      cancelAnimationFrame(raf);
+      window.removeEventListener("resize", measure);
+      ro?.disconnect();
+    };
+  }, [boardRef, origin.x, origin.y]);
+
+  if (!attach) return null;
+
+  const attachX = attach.x;
+  const attachY = attach.y;
+  const elbowX = Math.min(
+    Math.max(origin.x + 36, attachX - 48),
+    attachX - 14,
+  );
+  const elbowY = attachY;
+  const d = `M ${origin.x} ${origin.y} L ${elbowX} ${origin.y} L ${elbowX} ${elbowY} L ${attachX} ${attachY}`;
+
+  return (
+    <svg
+      className="pointer-events-none fixed inset-0 z-[20] h-full w-full overflow-visible"
+      aria-hidden
+    >
+      <defs>
+        <linearGradient id="nm-callout-stroke" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="#4f8bff" stopOpacity="1" />
+          <stop offset="100%" stopColor="#3ef4ff" stopOpacity="1" />
+        </linearGradient>
+        <filter id="nm-callout-glow" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="2.2" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+      {/* Soft under-stroke for contrast on lit corridor */}
+      <path
+        d={d}
+        fill="none"
+        stroke="rgba(8,16,36,0.55)"
+        strokeWidth="5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+      />
+      <path
+        d={d}
+        fill="none"
+        stroke="url(#nm-callout-stroke)"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        vectorEffect="non-scaling-stroke"
+        filter="url(#nm-callout-glow)"
+      />
+      <circle
+        cx={origin.x}
+        cy={origin.y}
+        r="6"
+        fill="#4f8bff"
+        stroke="#3ef4ff"
+        strokeWidth="2.5"
+      />
+      <circle
+        cx={origin.x}
+        cy={origin.y}
+        r="13"
+        fill="none"
+        stroke="#4f8bff"
+        strokeOpacity="0.45"
+        strokeWidth="1.75"
+      />
+      <circle cx={attachX} cy={attachY} r="4" fill="#3ef4ff" />
+    </svg>
+  );
+}
+
+/**
+ * Docked section details open as a top-right billboard with a callout line
+ * from the landmark - only after the walk has fully arrived at the stop.
+ */
+export function DestinationStage() {
+  const dockKey = useDockBandKey();
+  const arrived = useArrivedAtDock();
+  const anchor = useNodeScreenAnchor();
+  const { openId, open, close, isOpen } = useDestinationDetail();
+  const boardRef = useRef<HTMLDivElement>(null);
+  const bookBoardRef = useRef<HTMLDivElement>(null);
+  const [reveal, setReveal] = useState(false);
+
+  const { node } = useMemo(() => {
+    const [id] = dockKey.split(":");
+    const found =
+      JOURNEY_NODES.find((n) => n.id === id) ?? getActiveNode(0);
+    return { node: found };
+  }, [dockKey]);
+
+  useEffect(() => {
+    if (!arrived) {
+      setReveal(false);
+      return;
+    }
+    const timer = window.setTimeout(() => setReveal(true), REVEAL_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [arrived, node.id]);
+
+  const detailNode =
+    openId != null
+      ? (JOURNEY_NODES.find((n) => n.id === openId) ?? null)
+      : null;
+  const isBookDemoDetail = openId === "book-demo";
+  const DetailCard =
+    openId && !isBookDemoDetail ? DESTINATION_CARDS[openId] : null;
+
+  /** Glass panel + art + callout only after arrival reveal. */
+  const sectionOpen =
+    reveal &&
+    arrived &&
+    isOpen &&
+    openId === node.id &&
+    DetailCard != null &&
+    node.id !== "book-demo";
+
+  const calloutOrigin = useMemo(() => {
+    if (
+      anchor.visible &&
+      anchor.nodeId === node.id &&
+      Number.isFinite(anchor.x) &&
+      Number.isFinite(anchor.y)
+    ) {
+      return clampOrigin(anchor.x, anchor.y);
+    }
+    return fallbackOrigin();
+  }, [anchor.visible, anchor.nodeId, anchor.x, anchor.y, node.id]);
+
+  useEffect(() => {
+    if (!reveal || !arrived) return;
+    if (node.id === "book-demo") return;
+    open(node.id);
+  }, [reveal, arrived, node.id, open]);
+
+  useEffect(() => {
+    if (!isOpen || openId === "book-demo") return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") close();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isOpen, openId, close]);
+
+  useEffect(() => {
+    if ((!arrived || !reveal) && isOpen && openId !== "book-demo") close();
+  }, [arrived, reveal, isOpen, openId, close]);
+
+  return (
+    <>
+      {/* Callout behind the WebGL canvas so the robot sits in front of the line */}
+      {sectionOpen && DetailCard ? (
+        <BillboardCallout
+          originX={calloutOrigin.x}
+          originY={calloutOrigin.y}
+          boardRef={boardRef}
+        />
+      ) : null}
+
+      <div className="pointer-events-none fixed inset-0 z-[70]">
+        {/* Left thematic art - only after landing */}
+        <AnimatePresence>
+          {sectionOpen ? (
+            <motion.div
+              key={`billboard-art-${node.id}`}
+              className="pointer-events-none absolute bottom-28 left-0 top-24 z-[71] hidden w-[min(46vw,30rem)] md:block lg:w-[min(42vw,34rem)]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+            >
+              <BillboardArt nodeId={node.id} />
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+
+        {/* Top-right glass panel - only after landing */}
+        <AnimatePresence>
+          {sectionOpen && DetailCard ? (
+            <motion.div
+              key={`detail-panel-${node.id}`}
+              className="pointer-events-none absolute inset-0 z-[72]"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              role="dialog"
+              aria-label={detailNode?.title ?? node.title}
+            >
+              <motion.div
+                ref={boardRef}
+                className="pointer-events-auto absolute right-3 top-16 z-[74] w-[min(94vw,36rem)] md:right-5 md:top-20 md:w-[min(52vw,42rem)] lg:w-[min(48vw,46rem)]"
+                initial={{ opacity: 0, x: 28, y: -8, scale: 0.96 }}
+                animate={{ opacity: 1, x: 0, y: 0, scale: 1 }}
+                exit={{ opacity: 0, x: 16, y: -4, scale: 0.98 }}
+                transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <div className="relative">
+                  <div
+                    className="absolute -left-px top-10 h-10 w-1 rounded-full bg-gradient-to-b from-nm-primary to-nm-highlight"
+                    aria-hidden
+                  />
+                  <DetailCard />
+                </div>
+              </motion.div>
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          {reveal &&
+          arrived &&
+          node.id === "book-demo" &&
+          !isOpen &&
+          anchor.visible &&
+          anchor.nodeId === node.id ? (
+            <motion.button
+              key="teaser-book-demo"
+              type="button"
+              layoutId="journey-detail-book-demo"
+              className="pointer-events-auto absolute z-[71] -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-full border border-nm-primary/35 bg-nm-glass px-4 py-2.5 text-sm font-semibold text-nm-text shadow-[0_8px_32px_rgba(15,23,42,0.12)] backdrop-blur-[var(--nm-blur)]"
+              style={{
+                left: clampOrigin(anchor.x, anchor.y).x,
+                top: clampOrigin(anchor.x, anchor.y).y,
+              }}
+              initial={{ opacity: 0, scale: 0.92 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.96 }}
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                open("book-demo");
+              }}
+              onPointerDown={(event) => event.stopPropagation()}
+            >
+              Open · Book a Demo
+            </motion.button>
+          ) : null}
+        </AnimatePresence>
+
+        <div
+          className={
+            isBookDemoDetail
+              ? "pointer-events-auto fixed inset-0 z-[72]"
+              : "pointer-events-none fixed left-0 top-0 h-0 w-0 overflow-hidden opacity-0"
+          }
+          aria-hidden={!isBookDemoDetail}
+        >
+          {isBookDemoDetail ? (
+            <>
+              <button
+                type="button"
+                className="absolute inset-0 bg-slate-900/25 backdrop-blur-[2px]"
+                aria-label="Close details"
+                onClick={close}
+              />
+              <BillboardCallout
+                originX={calloutOrigin.x}
+                originY={calloutOrigin.y}
+                boardRef={bookBoardRef}
+              />
+            </>
+          ) : null}
+          <motion.div
+            ref={bookBoardRef}
+            layoutId={isBookDemoDetail ? "journey-detail-book-demo" : undefined}
+            className={
+              isBookDemoDetail
+                ? "pointer-events-auto absolute right-3 top-16 z-[74] w-[min(94vw,36rem)] md:right-5 md:top-20 md:w-[min(52vw,42rem)]"
+                : undefined
+            }
+            transition={{ type: "spring", stiffness: 380, damping: 32 }}
+          >
+            <BookDemoCard onClose={isBookDemoDetail ? close : undefined} />
+          </motion.div>
+        </div>
+      </div>
+    </>
+  );
+}

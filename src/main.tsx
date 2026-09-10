@@ -1,0 +1,16 @@
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "@fontsource/outfit/400.css";
+import "@fontsource/outfit/600.css";
+import "@fontsource/outfit/700.css";
+import "@fontsource/outfit/800.css";
+import "@fontsource/outfit/900.css";
+import "lenis/dist/lenis.css";
+import "./styles/globals.css";
+import App from "./App.tsx";
+
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <App />
+  </StrictMode>,
+);

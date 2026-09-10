@@ -1,0 +1,12 @@
+# Apache / Hostinger — serve the Vite SPA for client-side routes (/privacy, /terms, …)
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Existing files and directories (assets, privacy/index.html, …)
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  RewriteRule ^ index.html [L]
+</IfModule>

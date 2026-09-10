@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: navme-website-idea
+    runtime: static
+    repo: https://github.com/NERDS-GEEKS/NavMe_Website_Idea
+    branch: main
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    autoDeployTrigger: commit
+    routes:
+      # Only SPA fallback — existing /assets/* files are served as-is by Render
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=0, must-revalidate

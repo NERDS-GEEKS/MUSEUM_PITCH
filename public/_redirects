@@ -1,0 +1,2 @@
+# SPA fallback — Render still serves real files under /assets/* first
+/*    /index.html   200
