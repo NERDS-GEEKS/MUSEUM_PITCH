@@ -1,4 +1,5 @@
 import { JourneyScene } from "@/journey/world/JourneyScene";
+import { JOURNEY_FOV } from "@/journey/camera/dockPose";
 import { Canvas, useThree } from "@react-three/fiber";
 import { useEffect, useState } from "react";
 
@@ -19,8 +20,8 @@ function OpeningInvalidate({ active }: { active: boolean }) {
 
 /**
  * Full-viewport WebGL stage.
- * Caps pixel ratio on phones for FPS, but keeps enough DPR that the
- * companion and route arrow stay sharp on retina screens.
+ * Canvas props stay stable across rotate/resize so the renderer does not
+ * remount (that flash is the orientation flicker).
  */
 export function JourneyCanvas({
   openingActive = false,
@@ -30,11 +31,6 @@ export function JourneyCanvas({
   const [pageVisible, setPageVisible] = useState(
     () => typeof document === "undefined" || !document.hidden,
   );
-  const [isCompact, setIsCompact] = useState(() =>
-    typeof window !== "undefined"
-      ? window.matchMedia("(max-width: 900px)").matches
-      : false,
-  );
 
   useEffect(() => {
     const onVisibility = () => setPageVisible(!document.hidden);
@@ -42,41 +38,33 @@ export function JourneyCanvas({
     return () => document.removeEventListener("visibilitychange", onVisibility);
   }, []);
 
-  useEffect(() => {
-    const mql = window.matchMedia("(max-width: 900px)");
-    const onChange = () => setIsCompact(mql.matches);
-    onChange();
-    mql.addEventListener("change", onChange);
-    return () => mql.removeEventListener("change", onChange);
-  }, []);
-
   const frozen = !pageVisible;
   const introPan = openingActive && pageVisible;
-  // Opening: lighter load. Mobile: up to 1.75× (was 1× - caused blurry robot/arrow).
-  const dpr = openingActive
-    ? 1
-    : isCompact
-      ? ([1, 1.75] as [number, number])
-      : ([1, 1.5] as [number, number]);
 
   return (
     <Canvas
       className="pointer-events-auto fixed inset-0 z-30 h-svh w-screen touch-none"
-      dpr={dpr}
-      camera={{ fov: isCompact ? 72 : 68, near: 0.08, far: 180, position: [0, 1.62, 0] }}
+      dpr={[1, 1.75]}
+      camera={{
+        fov: JOURNEY_FOV,
+        near: 0.08,
+        far: 180,
+        position: [0, 1.62, 0],
+      }}
       gl={{
         antialias: true,
         alpha: false,
-        powerPreference: isCompact ? "low-power" : "high-performance",
+        powerPreference: "high-performance",
         stencil: false,
         depth: true,
       }}
+      resize={{ debounce: 50 }}
       frameloop={frozen ? "never" : introPan ? "demand" : "always"}
       onCreated={({ gl }) => {
-        gl.setClearColor("#1a1612", 1);
+        gl.setClearColor("#1E1A16", 1);
       }}
       style={{
-        background: "#1a1612",
+        background: "#1E1A16",
         visibility: "visible",
       }}
     >

@@ -45,33 +45,33 @@ export function CompleteCard() {
       showCtas={false}
     >
       <ol
-        className="mb-3 flex flex-wrap items-center gap-1 sm:mb-4 sm:gap-1.5"
+        className="mb-3 flex shrink-0 flex-wrap items-center gap-1.5"
         aria-label="Future museum pipeline"
       >
         {PIPELINE.map((step, index) => (
-          <li key={step} className="flex items-center gap-1 sm:gap-1.5">
+          <li key={step} className="flex items-center gap-1.5">
             {index > 0 ? (
-              <span className="text-[9px] text-nm-primary sm:text-[10px]" aria-hidden>
+              <span className="text-[10px] text-nm-primary" aria-hidden>
                 ↓
               </span>
             ) : null}
-            <span className="rounded-full border border-[#6ecfc8]/40 bg-nm-secondary/50 px-2 py-0.5 text-[9px] font-semibold tracking-wide text-nm-text sm:text-[10px]">
+            <span className="rounded-full border border-[#6ecfc8]/40 bg-nm-secondary/50 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-nm-text">
               {step}
             </span>
           </li>
         ))}
       </ol>
 
-      <dl className="mb-3 grid grid-cols-2 gap-1.5 sm:mb-4 sm:gap-2">
+      <dl className="mb-3 grid min-h-0 flex-1 grid-cols-2 gap-2">
         {VALUE_GRID.map((item) => (
           <div
             key={item.label}
-            className="rounded-lg border border-nm-border/60 bg-nm-secondary/40 px-2 py-1.5 sm:rounded-xl sm:px-2.5 sm:py-2"
+            className="flex flex-col justify-center rounded-xl border border-nm-border/60 bg-nm-secondary/40 px-2.5 py-2"
           >
-            <dt className="text-[9px] font-medium uppercase tracking-[0.14em] text-nm-primary sm:text-[10px]">
+            <dt className="text-[10px] font-medium uppercase tracking-[0.14em] text-nm-primary">
               {item.label}
             </dt>
-            <dd className="mt-0.5 text-[10px] leading-snug text-nm-text sm:text-[11px]">
+            <dd className="mt-0.5 text-[11px] leading-snug text-nm-text">
               {item.detail}
             </dd>
           </div>

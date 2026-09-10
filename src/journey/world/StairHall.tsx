@@ -14,11 +14,11 @@ import { MUSEUM } from "@/journey/theme/museumPalette";
 import { Text } from "@react-three/drei";
 import { Suspense } from "react";
 
-const TREAD_A = "#E4C89A";
-const TREAD_B = "#C4A06A";
-const RISER = "#5C4634";
-const NOSING = "#FFF3DC";
-const RAIL = "#8B7358";
+const TREAD_A = "#4A3E32";
+const TREAD_B = "#3A3228";
+const RISER = "#2A241E";
+const NOSING = "#6A5A48";
+const RAIL = "#6B5A48";
 
 const WELL_W = STAIR_WIDTH * 2 + STAIR_GAP + 1.15;
 

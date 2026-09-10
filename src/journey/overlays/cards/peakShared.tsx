@@ -59,11 +59,14 @@ export function PanelCtaButtons() {
 }
 
 /**
- * Story item layout: exactly 3 → one horizontal row; otherwise a responsive grid.
+ * Story item layout locked to the wall board, not the browser viewport.
+ * 3 → one row; 4 → even 2×2; 5 → one row of five.
  */
 export function storyItemGridClass(count: number): string {
   if (count === 3) return "grid grid-cols-3 gap-2";
-  return "grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-2.5";
+  if (count === 4) return "grid grid-cols-2 gap-2";
+  if (count === 5) return "grid grid-cols-5 gap-1.5";
+  return "grid grid-cols-2 gap-2";
 }
 
 /** Illustration row for peak destination cards. */

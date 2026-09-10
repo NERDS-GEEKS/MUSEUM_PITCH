@@ -1,10 +1,10 @@
 :root {
-  --nm-bg: #12100e;
-  --nm-secondary: #1c1916;
-  --nm-glass: rgba(255, 248, 238, 0.06);
-  --nm-border: rgba(255, 240, 220, 0.12);
-  --nm-text: #f2ebe3;
-  --nm-muted: #b8aea3;
+  --nm-bg: #0e0c0b;
+  --nm-secondary: #161311;
+  --nm-glass: rgba(255, 248, 238, 0.05);
+  --nm-border: rgba(255, 240, 220, 0.1);
+  --nm-text: #efe8e0;
+  --nm-muted: #a89f94;
   --nm-primary: #c4a574;
   --nm-accent: #8b6f4e;
   --nm-highlight: #6ecfc8;

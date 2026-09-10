@@ -12,7 +12,7 @@ function lookDeltaZ(dockT: number): number {
 
 describe("poseAtDock facing", () => {
   it("looks north through ground-floor and second-floor galleries", () => {
-    for (const idx of [0, 1, 5, 6]) {
+    for (const idx of [0, 1, 5]) {
       expect(lookDeltaZ(ROOM_DOCK_T[idx])).toBeGreaterThan(2);
       const pos = new Vector3();
       const look = new Vector3();
@@ -29,5 +29,9 @@ describe("poseAtDock facing", () => {
       poseAtDock(ROOM_DOCK_T[idx], pos, look);
       expect(pos.z).toBeGreaterThan(STORY_ROOMS[idx].center[2]);
     }
+  });
+
+  it("keeps the finish room looking along the route", () => {
+    expect(lookDeltaZ(ROOM_DOCK_T[6])).toBeGreaterThan(2);
   });
 });

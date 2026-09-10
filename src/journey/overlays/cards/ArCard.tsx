@@ -46,34 +46,31 @@ export function ArCard() {
       body="Changing a visitor persona redraws the museum path dynamically—the same Digital Twin, five learning journeys."
     >
       <ol
-        className={cn(
-          storyItemGridClass(LAYERS.length),
-          "mb-3 gap-1.5 sm:mb-4 sm:gap-2",
-        )}
+        className={cn(storyItemGridClass(LAYERS.length), "min-h-0 flex-1")}
         aria-label="Museum visitor personas"
       >
         {LAYERS.map((layer) => {
           const selected = selectedId === layer.id;
           return (
-            <li key={layer.id}>
+            <li key={layer.id} className="min-h-0">
               <button
                 type="button"
                 onClick={() => setSelectedId(layer.id)}
                 aria-pressed={selected}
                 className={cn(
-                  "h-full w-full rounded-lg border px-2 py-1.5 text-left sm:rounded-xl sm:px-2.5 sm:py-2",
+                  "flex h-full w-full flex-col justify-center rounded-xl border px-2 py-2 text-left",
                   selected
                     ? "border-[#6ecfc8]/55 bg-nm-secondary/70 shadow-[0_0_0_1px_rgba(110,207,200,0.18)]"
                     : "border-nm-border/60 bg-nm-secondary/40 hover:border-nm-border",
                 )}
               >
-                <p className="text-[9px] font-medium uppercase tracking-[0.14em] text-nm-primary sm:text-[10px]">
+                <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-nm-primary">
                   {layer.step}
                 </p>
-                <p className="mt-0.5 text-[10px] font-semibold leading-snug tracking-tight text-nm-text sm:text-xs">
+                <p className="mt-0.5 text-[12px] font-semibold leading-snug tracking-tight text-nm-text">
                   {layer.label}
                 </p>
-                <p className="mt-0.5 line-clamp-3 text-[9px] leading-snug text-nm-muted sm:text-[11px]">
+                <p className="mt-1 line-clamp-3 text-[10px] leading-snug text-nm-muted">
                   {layer.detail}
                 </p>
               </button>
@@ -81,9 +78,6 @@ export function ArCard() {
           );
         })}
       </ol>
-      <p className="text-[10px] leading-snug text-nm-muted sm:text-[11px] md:text-xs">
-        Select a persona to redraw the learning journey through the museum.
-      </p>
     </DestinationCard>
   );
 }

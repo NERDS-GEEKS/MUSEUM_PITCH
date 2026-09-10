@@ -1,4 +1,4 @@
-import { getActiveNode } from "@/journey/constants/nodes";
+import { getActiveNode, isArrivedAtDock } from "@/journey/constants/nodes";
 import {
   createContext,
   createElement,
@@ -85,5 +85,15 @@ export function useDockBandKey(): string {
       const inBand = Math.abs(progress - node.dockT) <= node.dockRadius;
       return `${node.id}:${inBand ? 1 : 0}`;
     },
+  );
+}
+
+/** True only after the walk has landed on a stop — not while traveling. */
+export function useArrivedAtDock(): boolean {
+  const store = useStore();
+  return useSyncExternalStore(
+    (onStoreChange) => store.subscribe(() => onStoreChange()),
+    () => isArrivedAtDock(store.progress, store.travelIntent),
+    () => isArrivedAtDock(store.progress, store.travelIntent),
   );
 }

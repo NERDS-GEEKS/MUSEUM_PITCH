@@ -21,7 +21,7 @@ export type DestinationCardProps = HTMLAttributes<HTMLDivElement> & {
   hideIntroOnMobile?: boolean;
 };
 
-/** Glass billboard shell - sized for top-right popup boards. */
+/** Wall-board shell — sized for the 640×355 gallery plaque, not the viewport. */
 export function DestinationCard({
   title,
   subtitle,
@@ -40,11 +40,7 @@ export function DestinationCard({
   return (
     <GlassPanel
       className={cn(
-        "relative w-full min-w-0 overflow-x-hidden overflow-y-hidden border-white/18 bg-[rgba(28,25,22,0.92)] shadow-[0_20px_60px_rgba(0,0,0,0.55)] backdrop-blur-2xl",
-        // Compact padding on short / small phones so content fits above the robot.
-        large
-          ? "max-w-none p-3 sm:p-5 md:max-w-3xl md:p-6 lg:p-7 xl:p-8 [@media(max-height:720px)]:p-2.5 sm:[@media(max-height:720px)]:p-4"
-          : "max-w-none p-3 sm:p-5 md:max-w-xl md:p-6 lg:p-8 [@media(max-height:720px)]:p-2.5 sm:[@media(max-height:720px)]:p-4",
+        "relative flex h-full w-full max-w-none min-w-0 flex-col overflow-hidden rounded-[18px] border-white/12 bg-[rgba(14,12,10,0.94)] p-5 shadow-[0_20px_60px_rgba(0,0,0,0.65)] backdrop-blur-2xl",
         className,
       )}
       {...props}
@@ -62,7 +58,7 @@ export function DestinationCard({
         <button
           type="button"
           onClick={onClose}
-          className="absolute right-2.5 top-2.5 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-nm-border/80 bg-nm-bg/50 text-nm-muted transition-colors hover:border-nm-primary/40 hover:text-nm-text sm:right-3 sm:top-3 sm:h-8 sm:w-8"
+          className="absolute right-2.5 top-2.5 z-10 flex h-7 w-7 items-center justify-center rounded-full border border-nm-border/80 bg-nm-bg/50 text-nm-muted transition-colors hover:border-nm-primary/40 hover:text-nm-text"
           aria-label="Close details"
         >
           <span className="text-lg leading-none" aria-hidden>
@@ -71,15 +67,17 @@ export function DestinationCard({
         </button>
       ) : null}
 
-      <div className={cn(onClose ? "relative min-w-0 pr-7 sm:pr-8" : "relative min-w-0")}>
+      <div
+        className={cn(
+          "relative flex min-h-0 flex-1 flex-col",
+          onClose && "pr-8",
+        )}
+      >
         {subtitle ? (
           <p
             className={cn(
               introMobile,
-              "mb-1 font-bold uppercase tracking-[0.16em] text-nm-primary sm:mb-1.5 sm:tracking-[0.18em]",
-              "text-[10px] sm:text-xs md:text-sm",
-              "[@media(max-height:720px)]:mb-0.5 [@media(max-height:720px)]:text-[9px]",
-              large && "lg:text-sm",
+              "mb-1 shrink-0 text-[11px] font-bold uppercase tracking-[0.18em] text-nm-primary",
             )}
           >
             {subtitle}
@@ -88,12 +86,10 @@ export function DestinationCard({
         <h2
           className={cn(
             introMobile,
-            "font-black tracking-tight text-nm-text",
+            "shrink-0 text-balance font-black tracking-tight text-nm-text",
             large
-              ? "text-lg leading-snug sm:text-xl md:text-2xl lg:text-[1.65rem] lg:leading-tight"
-              : "text-lg leading-snug sm:text-2xl md:text-2xl lg:text-3xl",
-            "[@media(max-height:720px)]:text-base [@media(max-height:720px)]:leading-snug sm:[@media(max-height:720px)]:text-xl",
-            "[@media(max-height:640px)]:text-[15px]",
+              ? "text-[1.45rem] leading-[1.15]"
+              : "text-[1.28rem] leading-[1.18]",
           )}
         >
           {title}
@@ -102,10 +98,8 @@ export function DestinationCard({
           <p
             className={cn(
               introMobile,
-              "mt-1.5 leading-relaxed text-nm-muted sm:mt-2.5",
-              "text-xs sm:text-sm md:text-base",
-              "[@media(max-height:720px)]:mt-1 [@media(max-height:720px)]:text-[11px] [@media(max-height:720px)]:leading-snug",
-              "[@media(max-height:640px)]:text-[10px] [@media(max-height:640px)]:line-clamp-3",
+              "mt-1.5 shrink-0 text-[13px] leading-snug text-nm-muted",
+              large ? "line-clamp-3" : "line-clamp-2",
             )}
           >
             {body}
@@ -114,13 +108,8 @@ export function DestinationCard({
         {children ? (
           <div
             className={cn(
-              "min-w-0 overflow-x-hidden",
-              hideIntroOnMobile
-                ? "mt-0 md:mt-5"
-                : large
-                  ? "mt-2.5 sm:mt-4"
-                  : "mt-3 sm:mt-5",
-              !hideIntroOnMobile && "[@media(max-height:720px)]:mt-2",
+              "flex min-h-0 flex-1 flex-col",
+              hideIntroOnMobile ? "mt-0 md:mt-3" : "mt-3",
             )}
           >
             {children}

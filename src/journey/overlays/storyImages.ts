@@ -1,16 +1,19 @@
-import welcomeImg from "@/assets/billboard/billboard-welcome.png";
-import gpsFailsImg from "@/assets/billboard/billboard-gps-fails.png";
-import vpsImg from "@/assets/billboard/billboard-vps.png";
-import mappingImg from "@/assets/billboard/billboard-mapping.png";
-import industriesImg from "@/assets/billboard/billboard-industries.png";
-import analyticsImg from "@/assets/billboard/billboard-analytics.png";
-import completeImg from "@/assets/billboard/billboard-complete.png";
-import capabilityOpsImg from "@/assets/billboard/billboard-capability-ops.png";
-import capabilitySmartSearchImg from "@/assets/billboard/billboard-capability-smart-search.jpg";
-import capabilityInteractiveMapsImg from "@/assets/billboard/billboard-capability-interactive-maps.jpg";
-import capabilityRouteOptimizationImg from "@/assets/billboard/billboard-capability-route-optimization.jpg";
-import industryMuseumsImg from "@/assets/billboard/billboard-industry-museums.png";
-import arImg from "@/assets/billboard/billboard-ar.png";
+import fallbackImg from "@/assets/wayfinding-reference.png";
+import logoImg from "@/assets/logo.png";
+
+const welcomeImg = logoImg;
+const gpsFailsImg = fallbackImg;
+const vpsImg = fallbackImg;
+const mappingImg = fallbackImg;
+const industriesImg = fallbackImg;
+const analyticsImg = logoImg;
+const completeImg = logoImg;
+const capabilityOpsImg = fallbackImg;
+const capabilitySmartSearchImg = fallbackImg;
+const capabilityInteractiveMapsImg = fallbackImg;
+const capabilityRouteOptimizationImg = fallbackImg;
+const industryMuseumsImg = fallbackImg;
+const arImg = logoImg;
 
 /** Shared story imagery for 2D billboards and 3D corridor screens. */
 export const STORY_IMAGES: Record<string, string> = {

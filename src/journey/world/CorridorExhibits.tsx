@@ -1,123 +1,170 @@
-import { JOURNEY_NODES } from "@/journey/constants/nodes";
-import { STORY_IMAGES } from "@/journey/overlays/storyImages";
-import { useVisibleMuseumFloor } from "@/journey/hooks/useVisibleMuseumFloor";
-import { STORY_ROOMS, type StoryRoom } from "@/journey/path/walkPath";
-import { MUSEUM } from "@/journey/theme/museumPalette";
-import { getGalleryTheme } from "@/journey/world/galleryThemes";
-import { useActiveNodeId } from "@/journey/scroll/useJourneyProgress";
-import { useTexture } from "@react-three/drei";
-import { useMemo } from "react";
-import { SRGBColorSpace } from "three";
+import { DESTINATION_CARDS } from "@/journey/overlays/cards";
+import { WelcomeVideoPreview } from "@/journey/overlays/cards/WelcomeVideoPreview";
+import { setExperienceVideoOpen } from "@/journey/overlays/experienceVideoStore";
+import {
+  roomLookSign,
+  STORY_ROOMS,
+  type StoryRoom,
+} from "@/journey/path/walkPath";
+import {
+  getGalleryTheme,
+  type GalleryTheme,
+} from "@/journey/world/galleryThemes";
+import { useViewportSettled } from "@/hooks/useViewportSettled";
+import {
+  useActiveNodeId,
+  useArrivedAtDock,
+} from "@/journey/scroll/useJourneyProgress";
+import { Html } from "@react-three/drei";
+import { type ReactNode } from "react";
 
-const HIGHLIGHT = MUSEUM.highlight;
+const BOARD_CSS_W = 640;
+const BOARD_W = 6.4;
+const BOARD_H = 3.55;
 
-function ExhibitionScreen({
-  nodeId,
-  title,
-  subtitle,
-  room,
-  active,
+function wallDistanceFactor(worldWidth: number, cssW = BOARD_CSS_W): number {
+  return (400 * worldWidth) / cssW;
+}
+
+function WallHtmlBoard({
+  position,
+  rotationY,
+  theme,
+  htmlLive,
+  onBoardClick,
+  children,
 }: {
-  nodeId: string;
-  title: string;
-  subtitle: string;
-  room: StoryRoom;
-  active: boolean;
+  position: [number, number, number];
+  rotationY: number;
+  theme: GalleryTheme;
+  htmlLive: boolean;
+  onBoardClick?: () => void;
+  children: ReactNode;
 }) {
-  const src = STORY_IMAGES[nodeId] ?? STORY_IMAGES.welcome;
-  const texture = useTexture(src);
-  texture.colorSpace = SRGBColorSpace;
-  texture.needsUpdate = true;
-  const theme = getGalleryTheme(room.id);
-
-  const [cx, cy, cz] = room.center;
-  const halfW = room.size[0] / 2;
-  const onLeft = room.side !== "right";
-  const x = cx + (onLeft ? -(halfW - 0.42) : halfW - 0.42);
-  const z = cz;
-  const rotY = onLeft ? Math.PI / 2 : -Math.PI / 2;
-  const w = 2.4;
-  const h = 3.2;
-  const glow = active ? 1.05 : 0.4;
+  const cssW = BOARD_CSS_W;
+  const cssH = Math.max(1, Math.round(cssW * (BOARD_H / BOARD_W)));
+  const distanceFactor = wallDistanceFactor(BOARD_W, cssW);
 
   return (
-    <group position={[x, cy + h / 2 + 0.15, z]} rotation={[0, rotY, 0]}>
-      <mesh position={[0, -h / 2 - 0.05, 0]}>
-        <boxGeometry args={[w * 0.55, 0.12, 0.45]} />
-        <meshStandardMaterial color={theme.frame} roughness={0.45} metalness={0.3} />
-      </mesh>
-
-      <mesh>
-        <boxGeometry args={[w + 0.14, h + 0.14, 0.1]} />
+    <group position={position} rotation={[0, rotationY, 0]}>
+      <mesh position={[0, 0, -0.05]}>
+        <boxGeometry args={[BOARD_W + 0.22, BOARD_H + 0.22, 0.12]} />
         <meshStandardMaterial
           color={theme.frame}
           roughness={0.4}
-          metalness={0.35}
-          emissive={theme.accent}
-          emissiveIntensity={active ? 0.28 : 0.08}
+          metalness={0.3}
         />
       </mesh>
-
-      <mesh position={[0, 0.15, 0.06]} renderOrder={2}>
-        <planeGeometry args={[w * 0.92, h * 0.72]} />
-        <meshBasicMaterial map={texture} toneMapped={false} />
+      <mesh
+        position={[0, 0, -0.01]}
+        onClick={
+          onBoardClick
+            ? (event) => {
+                event.stopPropagation();
+                onBoardClick();
+              }
+            : undefined
+        }
+      >
+        <planeGeometry args={[BOARD_W, BOARD_H]} />
+        <meshStandardMaterial color="#1c1916" roughness={0.8} />
       </mesh>
-
-      <mesh position={[0, -h * 0.38, 0.07]}>
-        <planeGeometry args={[w * 0.92, 0.55]} />
+      <mesh position={[0, BOARD_H / 2 + 0.1, 0.04]}>
+        <boxGeometry args={[BOARD_W * 0.42, 0.045, 0.05]} />
         <meshStandardMaterial
-          color={MUSEUM.frameInner}
-          emissive={theme.accent}
-          emissiveIntensity={active ? 0.15 : 0.05}
-          roughness={0.55}
+          color={theme.light}
+          emissive={theme.light}
+          emissiveIntensity={0.75}
+          roughness={0.35}
         />
       </mesh>
-
-      <mesh position={[0, 0, -0.02]}>
-        <boxGeometry args={[w + 0.28, h + 0.28, 0.04]} />
-        <meshStandardMaterial
-          color={HIGHLIGHT}
-          emissive={HIGHLIGHT}
-          emissiveIntensity={glow * 0.28}
-          transparent
-          opacity={active ? 0.3 : 0.1}
-          depthWrite={false}
-        />
-      </mesh>
-
-      <group userData={{ title, subtitle }} />
+      <Html
+        transform
+        occlude={false}
+        center
+        distanceFactor={distanceFactor}
+        position={[0, 0, 0.03]}
+        style={{
+          pointerEvents: htmlLive ? "auto" : "none",
+          opacity: htmlLive ? 1 : 0,
+          visibility: htmlLive ? "visible" : "hidden",
+        }}
+        zIndexRange={[20, 0]}
+      >
+        <div
+          style={{
+            width: cssW,
+            height: cssH,
+            overflow: "hidden",
+            pointerEvents: htmlLive ? "auto" : "none",
+            scrollbarWidth: "none",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          {children}
+        </div>
+      </Html>
     </group>
   );
 }
 
-/** Story boards on each room's outer wall (doors stay on north/south). */
-export function CorridorExhibits() {
-  const activeId = useActiveNodeId();
-  const visibleFloor = useVisibleMuseumFloor();
+function RoomStoryboards({
+  room,
+  htmlLive,
+}: {
+  room: StoryRoom;
+  htmlLive: boolean;
+}) {
+  const theme = getGalleryTheme(room.id);
+  const Card = DESTINATION_CARDS[room.id];
+  const [cx, cy, cz] = room.center;
+  const halfW = room.size[0] / 2;
+  const index = STORY_ROOMS.findIndex((item) => item.id === room.id);
+  const look = roomLookSign(index);
+  // Screen-right wall when looking down the gallery (matches the dock camera).
+  const rightSign = -look;
+  const boardX = cx + rightSign * (halfW - 0.2);
+  const boardRotY = rightSign < 0 ? Math.PI / 2 : -Math.PI / 2;
+  const leftSign = look;
+  const videoX = cx + leftSign * (halfW - 0.2);
+  const videoRotY = leftSign < 0 ? Math.PI / 2 : -Math.PI / 2;
 
-  const exhibits = useMemo(
-    () =>
-      JOURNEY_NODES.map((node, index) => ({
-        node,
-        room: STORY_ROOMS[index],
-      })),
-    [],
-  );
+  if (!Card) return null;
 
   return (
-    <group>
-      {exhibits.map(({ node, room }) =>
-        room && node.id !== "complete" && room.floor === visibleFloor ? (
-          <ExhibitionScreen
-            key={node.id}
-            nodeId={node.id}
-            title={node.title}
-            subtitle={node.subtitle}
-            room={room}
-            active={node.id === activeId}
-          />
-        ) : null,
-      )}
-    </group>
+    <>
+      <WallHtmlBoard
+        position={[boardX, cy + 2.12, cz]}
+        rotationY={boardRotY}
+        theme={theme}
+        htmlLive={htmlLive}
+      >
+        <Card />
+      </WallHtmlBoard>
+      {room.id === "welcome" ? (
+        <WallHtmlBoard
+          position={[videoX, cy + 2.12, cz]}
+          rotationY={videoRotY}
+          theme={theme}
+          htmlLive={htmlLive}
+          onBoardClick={() => setExperienceVideoOpen(true)}
+        >
+          <WelcomeVideoPreview />
+        </WallHtmlBoard>
+      ) : null}
+    </>
   );
+}
+
+/** Page content for the stop you are in — neighboring rooms stay empty. */
+export function CorridorExhibits() {
+  const activeId = useActiveNodeId();
+  const arrived = useArrivedAtDock();
+  const htmlLive = useViewportSettled(220);
+  const room = STORY_ROOMS.find((item) => item.id === activeId);
+
+  if (!arrived || !room || room.id === "complete") return null;
+
+  return <RoomStoryboards room={room} htmlLive={htmlLive} />;
 }

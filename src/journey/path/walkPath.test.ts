@@ -8,9 +8,11 @@ import {
   WALK_WAYPOINTS,
   floorForIndex,
   floorFromY,
+  isOpenGalleryFloor,
   isStairClimbY,
   isStairHallRevealed,
   roomLookSign,
+  roomOpenings,
   snapStairY,
 } from "./walkPath";
 
@@ -170,5 +172,27 @@ describe("room look direction", () => {
     expect(STORY_ROOMS.map((_, index) => roomLookSign(index))).toEqual([
       1, 1, -1, -1, -1, 1, 1,
     ]);
+  });
+});
+
+describe("gallery walls", () => {
+  it("encloses slides 6–7 instead of leaving the top floor open", () => {
+    const convert = STORY_ROOMS[5];
+    const complete = STORY_ROOMS[6];
+    expect(convert?.floor).toBe(2);
+    expect(complete?.floor).toBe(2);
+    expect(isOpenGalleryFloor(2)).toBe(false);
+    expect(roomOpenings(convert)).toEqual({
+      north: false,
+      south: false,
+      east: false,
+      west: false,
+    });
+    expect(roomOpenings(complete)).toEqual({
+      north: false,
+      south: false,
+      east: false,
+      west: false,
+    });
   });
 });

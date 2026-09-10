@@ -130,6 +130,18 @@ export function getActiveNode(progress: number): JourneyNode {
   return nearest;
 }
 
+/** Close enough to a dock, and not mid-walk, to reveal that room's page. */
+export const ARRIVE_EPS = 0.005;
+
+export function isArrivedAtDock(
+  progress: number,
+  travelIntent: -1 | 0 | 1,
+): boolean {
+  if (travelIntent !== 0) return false;
+  const node = getActiveNode(progress);
+  return Math.abs(progress - node.dockT) <= ARRIVE_EPS;
+}
+
 export function getNodeProgress(progress: number, node: JourneyNode): number {
   const clamped = Math.min(1, Math.max(0, progress));
   if (Math.abs(clamped - node.dockT) > node.dockRadius) {

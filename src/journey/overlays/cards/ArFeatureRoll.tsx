@@ -75,8 +75,8 @@ export function ArFeatureRoll({
   };
 
   return (
-    <div className="relative w-full min-w-0">
-      <div className="relative mx-auto h-[11.5rem] w-full max-w-[22rem] sm:h-[13rem] sm:max-w-[24rem] [@media(max-height:720px)]:h-[9.25rem] [@media(max-height:640px)]:h-[8.25rem]">
+    <div className="relative flex min-h-0 w-full flex-1 flex-col justify-center">
+      <div className="relative mx-auto h-[9.75rem] w-full max-w-[28rem]">
         {items.map((item, i) => {
           const offset = i - index;
           const abs = Math.abs(offset);
@@ -95,14 +95,14 @@ export function ArFeatureRoll({
               className={cn(
                 "absolute left-1/2 top-1/2 overflow-hidden rounded-xl border text-left transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
                 active
-                  ? "z-20 h-[10.5rem] w-[12.5rem] -translate-x-1/2 -translate-y-1/2 border-[#6ecfc8]/55 shadow-[0_0_0_1px_rgba(110,207,200,0.18),0_18px_40px_rgba(0,0,0,0.45)] sm:h-[12rem] sm:w-[14rem] [@media(max-height:720px)]:h-[8.5rem] [@media(max-height:720px)]:w-[10.5rem] [@media(max-height:640px)]:h-[7.5rem] [@media(max-height:640px)]:w-[9.5rem]"
-                  : "z-10 h-[8.5rem] w-[9.5rem] -translate-y-1/2 scale-[0.92] border-white/12 opacity-55 shadow-[0_12px_28px_rgba(0,0,0,0.35)] hover:opacity-75 sm:h-[9.5rem] sm:w-[10.5rem] [@media(max-height:720px)]:h-[7rem] [@media(max-height:720px)]:w-[8rem]",
+                  ? "z-20 h-[8.5rem] w-[11.25rem] -translate-x-1/2 -translate-y-1/2 border-[#6ecfc8]/55 shadow-[0_0_0_1px_rgba(110,207,200,0.18),0_18px_40px_rgba(0,0,0,0.45)]"
+                  : "z-10 h-[7rem] w-[8.5rem] -translate-y-1/2 scale-[0.92] border-white/12 opacity-55 shadow-[0_12px_28px_rgba(0,0,0,0.35)] hover:opacity-75",
               )}
               style={
                 active
                   ? undefined
                   : {
-                      transform: `translate(calc(-50% + ${side * (abs === 1 ? 6.6 : 10.8)}rem), -50%) scale(${abs === 1 ? 0.9 : 0.78})`,
+                      transform: `translate(calc(-50% + ${side * (abs === 1 ? 5.4 : 8.6)}rem), -50%) scale(${abs === 1 ? 0.9 : 0.78})`,
                       zIndex: 10 - abs,
                       opacity: abs === 1 ? 0.55 : 0.28,
                     }
@@ -134,14 +134,14 @@ export function ArFeatureRoll({
                     aria-hidden
                   />
                   <ArFrameMarks active />
-                  <div className="absolute inset-x-0 bottom-0 p-2 sm:p-3 [@media(max-height:720px)]:p-1.5">
-                    <p className="text-[10px] font-medium uppercase tracking-[0.16em] text-[#C4A574]/90 [@media(max-height:720px)]:text-[8px]">
+                  <div className="absolute inset-x-0 bottom-0 p-2">
+                    <p className="text-[9px] font-medium uppercase tracking-[0.16em] text-[#C4A574]/90">
                       {label}
                     </p>
-                    <p className="mt-0.5 text-sm font-semibold tracking-tight text-white [@media(max-height:720px)]:text-xs">
+                    <p className="mt-0.5 text-[13px] font-semibold tracking-tight text-white">
                       {item.title}
                     </p>
-                    <p className="mt-0.5 line-clamp-2 text-[10px] leading-snug text-white/70 sm:text-[11px] [@media(max-height:720px)]:line-clamp-1 [@media(max-height:720px)]:text-[9px]">
+                    <p className="mt-0.5 line-clamp-2 text-[10px] leading-snug text-white/70">
                       {item.description}
                     </p>
                   </div>
@@ -184,7 +184,7 @@ export function ArFeatureRoll({
       </div>
 
       <div
-        className="mt-3 flex items-center justify-center gap-1.5 [@media(max-height:720px)]:mt-2"
+        className="mt-2 flex items-center justify-center gap-1.5"
         role="tablist"
         aria-label={ariaLabel}
       >

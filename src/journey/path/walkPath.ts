@@ -690,13 +690,13 @@ export function finishWallCamera(
 export type HallSegment = {
   center: [number, number, number];
   size: [number, number];
-  /** Open gallery floor — no corridor side walls. */
+  /** Open gallery floor — no corridor side walls. Unused; every floor is walled. */
   open?: boolean;
 };
 
-/** First floor keeps walled halls; the top floor stays an open gallery. */
-export function isOpenGalleryFloor(floor: MuseumFloor): boolean {
-  return floor === 2;
+/** Every storey uses enclosed rooms with doorways, including slides 6–7. */
+export function isOpenGalleryFloor(_floor: MuseumFloor): boolean {
+  return false;
 }
 
 export function buildHallSegments(): HallSegment[] {

@@ -44,7 +44,15 @@ const _introLook = new Vector3();
 const _welcomePos = new Vector3();
 const _welcomeLook = new Vector3();
 const _currentLook = new Vector3();
+const _lookDir = new Vector3();
 const _up = new Vector3(0, 1, 0);
+
+const LOOK_YAW_SENS = 0.0048;
+const LOOK_PITCH_SENS = 0.0036;
+const LOOK_PITCH_MIN = -0.62;
+const LOOK_PITCH_MAX = 0.7;
+/** Click the wall vs drag-to-look. */
+const LOOK_DRAG_PX = 6;
 
 function applyStraightHop(
   fromT: number,
@@ -99,12 +107,95 @@ export function JourneyCamera({
   const initialized = useRef(false);
   const followTightRef = useRef(followTight);
   followTightRef.current = followTight;
+  const lookYawRef = useRef(0);
+  const lookPitchRef = useRef(0);
+  const draggingRef = useRef(false);
+  const pendingLookRef = useRef(false);
+  const lookEnabledRef = useRef(false);
+  const finePointerRef = useRef(false);
+  const dockIdRef = useRef("");
+  const lastPtrRef = useRef({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const fine = window.matchMedia("(pointer: fine)");
+    const syncFine = () => {
+      finePointerRef.current = fine.matches;
+    };
+    syncFine();
+    fine.addEventListener("change", syncFine);
+    return () => fine.removeEventListener("change", syncFine);
+  }, []);
 
   useEffect(() => {
     const el = gl.domElement;
     el.style.touchAction = "none";
     el.style.cursor = "default";
+
+    const cancelLook = () => {
+      pendingLookRef.current = false;
+      draggingRef.current = false;
+      lookYawRef.current = 0;
+      lookPitchRef.current = 0;
+      el.style.cursor = "default";
+    };
+
+    const onDown = (event: PointerEvent) => {
+      // Mouse-only look. Touch/pen must not steal swipes or act like gyro.
+      if (event.pointerType !== "mouse") return;
+      if (!finePointerRef.current) return;
+      if (event.button !== 0) return;
+      if (!lookEnabledRef.current) return;
+      pendingLookRef.current = true;
+      draggingRef.current = false;
+      lastPtrRef.current.x = event.clientX;
+      lastPtrRef.current.y = event.clientY;
+    };
+    const onMove = (event: PointerEvent) => {
+      if (!pendingLookRef.current && !draggingRef.current) return;
+      if (event.pointerType !== "mouse") {
+        cancelLook();
+        return;
+      }
+      const dx = event.clientX - lastPtrRef.current.x;
+      const dy = event.clientY - lastPtrRef.current.y;
+      if (!draggingRef.current) {
+        if (Math.hypot(dx, dy) < LOOK_DRAG_PX) return;
+        draggingRef.current = true;
+        el.setPointerCapture(event.pointerId);
+        el.style.cursor = "grabbing";
+      }
+      lastPtrRef.current.x = event.clientX;
+      lastPtrRef.current.y = event.clientY;
+      lookYawRef.current -= dx * LOOK_YAW_SENS;
+      lookPitchRef.current = MathUtils.clamp(
+        lookPitchRef.current - dy * LOOK_PITCH_SENS,
+        LOOK_PITCH_MIN,
+        LOOK_PITCH_MAX,
+      );
+    };
+    const endDrag = (event: PointerEvent) => {
+      pendingLookRef.current = false;
+      if (!draggingRef.current) return;
+      draggingRef.current = false;
+      if (el.hasPointerCapture(event.pointerId)) {
+        el.releasePointerCapture(event.pointerId);
+      }
+      el.style.cursor = lookEnabledRef.current ? "grab" : "default";
+    };
+
+    el.addEventListener("pointerdown", onDown);
+    el.addEventListener("pointermove", onMove);
+    el.addEventListener("pointerup", endDrag);
+    el.addEventListener("pointercancel", endDrag);
+    window.addEventListener("orientationchange", cancelLook);
+    window.addEventListener("resize", cancelLook);
     return () => {
+      el.removeEventListener("pointerdown", onDown);
+      el.removeEventListener("pointermove", onMove);
+      el.removeEventListener("pointerup", endDrag);
+      el.removeEventListener("pointercancel", endDrag);
+      window.removeEventListener("orientationchange", cancelLook);
+      window.removeEventListener("resize", cancelLook);
       el.style.cursor = "";
       el.style.touchAction = "";
     };
@@ -199,6 +290,58 @@ export function JourneyCamera({
           _targetPos.copy(_dockPos);
           _lookAt.copy(_dockLook);
         }
+      }
+    }
+
+    const active = getActiveNode(progress);
+    if (dockIdRef.current !== active.id) {
+      dockIdRef.current = active.id;
+      lookYawRef.current = 0;
+      lookPitchRef.current = 0;
+    }
+
+    const hopSeg = getTravelSegment();
+    const hopping = hopSeg?.mode === "straight" && intent !== 0;
+    const finishLocked = credits > 0.08 && active.id === "complete";
+    const lookEnabled =
+      !tight &&
+      intent === 0 &&
+      !hopping &&
+      !finishLocked &&
+      active.id !== "complete" &&
+      finePointerRef.current;
+    lookEnabledRef.current = lookEnabled;
+    if (!draggingRef.current) {
+      gl.domElement.style.cursor = lookEnabled ? "grab" : "default";
+    }
+
+    if (!lookEnabled) {
+      lookYawRef.current = MathUtils.damp(lookYawRef.current, 0, 9, delta);
+      lookPitchRef.current = MathUtils.damp(lookPitchRef.current, 0, 9, delta);
+    }
+
+    const yawOff = lookYawRef.current;
+    const pitchOff = lookPitchRef.current;
+    if (Math.abs(yawOff) > 1e-4 || Math.abs(pitchOff) > 1e-4) {
+      _lookDir.copy(_lookAt).sub(_targetPos);
+      const dist = Math.max(2.8, _lookDir.length());
+      const baseYaw = Math.atan2(_lookDir.x, _lookDir.z);
+      const horiz = Math.hypot(_lookDir.x, _lookDir.z);
+      const basePitch = Math.atan2(_lookDir.y, Math.max(1e-5, horiz));
+      const yaw = baseYaw + yawOff;
+      const pitch = MathUtils.clamp(
+        basePitch + pitchOff,
+        LOOK_PITCH_MIN,
+        LOOK_PITCH_MAX,
+      );
+      const cp = Math.cos(pitch);
+      _lookAt.set(
+        _targetPos.x + Math.sin(yaw) * cp * dist,
+        _targetPos.y + Math.sin(pitch) * dist,
+        _targetPos.z + Math.cos(yaw) * cp * dist,
+      );
+      if (lookEnabled) {
+        lookDamp = draggingRef.current ? 22 : 12;
       }
     }
 

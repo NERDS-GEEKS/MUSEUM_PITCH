@@ -37,38 +37,38 @@ export function WelcomeCard() {
       subtitle="A Spatial AI Layer for Physical Spaces"
       body="NavMe connects physical museums with a digital experience layer — helping visitors navigate, discover, learn and engage, while enabling museums to understand how their spaces are explored and experienced."
     >
-      <p className="text-[10px] leading-snug text-nm-muted sm:text-[11px] md:text-xs">
+      <p className="shrink-0 text-[12px] leading-snug text-nm-muted">
         Transforming physical spaces into intelligent, interactive environments.
       </p>
 
-      <div className="flex flex-wrap gap-1.5 text-[10px] text-nm-muted sm:gap-2 sm:text-[11px] md:text-xs">
+      <div className="mt-2 flex shrink-0 flex-wrap gap-1.5 text-[11px] text-nm-muted">
         {HERO_TAGS.map((tag) => (
           <span
             key={tag}
-            className="rounded-full border border-nm-border/70 bg-nm-secondary/50 px-2 py-0.5 sm:px-2.5 sm:py-1"
+            className="rounded-full border border-nm-border/70 bg-nm-secondary/50 px-2.5 py-1"
           >
             {tag}
           </span>
         ))}
       </div>
 
-      <dl className="mt-2 grid grid-cols-2 gap-1.5 sm:mt-2.5 sm:grid-cols-4 sm:gap-2">
+      <dl className="mt-3 grid min-h-0 flex-1 grid-cols-4 gap-2">
         {HERO_PILLARS.map((pillar) => (
           <div
             key={pillar.label}
-            className="rounded-lg border border-nm-border/60 bg-nm-secondary/40 px-1.5 py-1.5 sm:rounded-xl sm:px-2 sm:py-2"
+            className="flex flex-col justify-center rounded-xl border border-nm-border/60 bg-nm-secondary/40 px-2 py-2"
           >
-            <dt className="text-[10px] font-semibold tracking-tight text-nm-text sm:text-xs">
+            <dt className="text-[11px] font-semibold tracking-tight text-nm-text">
               {pillar.label}
             </dt>
-            <dd className="mt-0.5 text-[9px] leading-snug text-nm-muted sm:text-[10px] md:text-[11px]">
+            <dd className="mt-0.5 text-[10px] leading-snug text-nm-muted">
               {pillar.detail}
             </dd>
           </div>
         ))}
       </dl>
 
-      <div className="mt-2.5 sm:mt-3">
+      <div className="mt-3 shrink-0">
         <Button
           type="button"
           variant="primary"

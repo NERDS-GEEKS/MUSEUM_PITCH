@@ -1,7 +1,7 @@
-import coverAnalytics from "@/assets/billboard/billboard-analytics.png";
-import coverAr from "@/assets/billboard/billboard-ar.png";
-import coverGpsFails from "@/assets/billboard/billboard-gps-fails.png";
-import coverVps from "@/assets/billboard/billboard-vps.png";
+import coverAnalytics from "@/assets/logo.png";
+import coverAr from "@/assets/logo.png";
+import coverGpsFails from "@/assets/wayfinding-reference.png";
+import coverVps from "@/assets/wayfinding-reference.png";
 import {
   DEFAULT_BLOG_LINKEDIN_URL,
   filterBlogPostsByCategory,

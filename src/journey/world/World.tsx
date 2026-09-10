@@ -49,7 +49,7 @@ function WallBox({
       <meshLambertMaterial
         color={wall}
         emissive={emissive}
-        emissiveIntensity={0.2}
+        emissiveIntensity={0.12}
       />
     </mesh>
   );
@@ -345,7 +345,7 @@ function HallShell({
           emissiveIntensity={0.18}
         />
       </mesh>
-      {/* Open galleries stay wall-free; walled halls only get long side walls. */}
+      {/* Long north–south halls get side walls; short east–west spans use room walls. */}
       {!open && d >= w ? (
         <>
           <WallBox
@@ -377,20 +377,20 @@ export function World() {
 
   return (
     <>
-      <fog attach="fog" args={[FOG, 16, 58]} />
+      <fog attach="fog" args={[FOG, 18, 56]} />
       <color attach="background" args={[FOG]} />
 
-      <ambientLight intensity={1.28} />
-      <hemisphereLight args={[MUSEUM.light, "#7a6e62", 1.15]} />
+      <ambientLight intensity={0.92} />
+      <hemisphereLight args={[MUSEUM.light, "#3a342e", 0.72]} />
       <directionalLight
         position={[6, 22 + FLOOR_RISE * 2, midZ]}
-        intensity={0.95}
+        intensity={0.68}
         color={MUSEUM.light}
       />
       <directionalLight
         position={[-8, 10 + FLOOR_RISE, midZ + 20]}
-        intensity={0.42}
-        color="#f4e4c4"
+        intensity={0.28}
+        color="#d4c4a4"
       />
 
       {halls.map((h, i) => (

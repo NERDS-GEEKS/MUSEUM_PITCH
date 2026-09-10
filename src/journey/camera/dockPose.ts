@@ -79,7 +79,9 @@ export function poseAtDock(
   const index = STORY_ROOMS.findIndex((item) => item.id === room.id);
   const sign = roomLookSign(index);
   outPos.set(cx, cy + EYE_HEIGHT, cz - sign * BEHIND_METERS);
-  outLook.set(cx, cy + EYE_HEIGHT * 0.92, cz + sign * 5);
+  // Look down the gallery so both side walls peek: story on the right,
+  // welcome video on the left.
+  outLook.set(cx, cy + EYE_HEIGHT * 0.92, cz + sign * 5.2);
 }
 
 /**

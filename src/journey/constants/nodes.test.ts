@@ -4,6 +4,7 @@ import {
   getActiveNode,
   getGuidanceStatus,
   getNodeProgress,
+  isArrivedAtDock,
 } from "./nodes";
 
 describe("JOURNEY_NODES", () => {
@@ -24,6 +25,16 @@ describe("JOURNEY_NODES", () => {
   it("getActiveNode returns nearest dock center", () => {
     const mid = JOURNEY_NODES[0].dockT;
     expect(getActiveNode(mid).id).toBe("welcome");
+  });
+
+  it("hides page content while walking between docks", () => {
+    const welcome = JOURNEY_NODES[0];
+    const next = JOURNEY_NODES[1];
+    expect(isArrivedAtDock(welcome.dockT, 0)).toBe(true);
+    expect(isArrivedAtDock(welcome.dockT, 1)).toBe(false);
+    const midWalk = (welcome.dockT + next.dockT) / 2;
+    expect(isArrivedAtDock(midWalk, 1)).toBe(false);
+    expect(isArrivedAtDock(midWalk, 0)).toBe(false);
   });
 
   it("getNodeProgress returns 0 when progress is past dock band", () => {
