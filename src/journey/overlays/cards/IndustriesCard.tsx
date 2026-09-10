@@ -33,7 +33,7 @@ export function IndustriesCard() {
   return (
     <DestinationCard
       title="Transform Traditional Museums into AR Museums"
-      subtitle="Convert"
+      subtitle="Benefits"
       body="Physical Museum → Digital Twin → AR Experience Layer → Intelligent Museum."
     >
       <ArFeatureRoll

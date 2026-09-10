@@ -18,7 +18,7 @@ export function MappingCard() {
   return (
     <DestinationCard
       title="Don't Just Show Visitors the Way. Give Them a Reason to Explore."
-      subtitle="Navigate"
+      subtitle="Guide"
       body='From "Where do I go?" to "What can I discover next?"'
     >
       <ArFeatureRoll

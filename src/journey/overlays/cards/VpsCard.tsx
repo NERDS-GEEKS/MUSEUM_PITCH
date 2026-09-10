@@ -37,7 +37,7 @@ export function VpsCard() {
     <DestinationCard
       size="lg"
       title="Turn Your Museum Into a Guided Experience"
-      subtitle="Meet NavMe"
+      subtitle="Solution"
       body="NavMe adds a digital layer to your physical museum directly through the visitor's smartphone browser. No App. No Download. No Additional Hardware."
     >
       <ul

@@ -3,9 +3,7 @@ import { CALENDLY_DEMO_URL } from "@/constants/contact";
 import { FOOTER_COLUMNS, type FooterLink } from "@/constants/footer";
 import {
   PRIVACY_PATH,
-  PRIVACY_URL,
   TERMS_PATH,
-  TERMS_URL,
 } from "@/constants/legal/types";
 import { JOURNEY_NODES } from "@/journey/constants/nodes";
 import {
@@ -171,10 +169,13 @@ function WallMuralHtml({
   navigate: NavigateFunction;
   goToJourney: GoToJourney;
 }) {
-  // Desktop / tablet keep the shipped wall mural layout (git).
-  const isDesktop = !isPhone && !isCompact;
+  const quickLinks =
+    FOOTER_COLUMNS.find((column) => column.title === "Quick Links") ??
+    FOOTER_COLUMNS[0];
+  const contact =
+    FOOTER_COLUMNS.find((column) => column.title === "Contact") ??
+    FOOTER_COLUMNS[1];
 
-  // Phone type is relative to mural CSS size (fills the screen via distanceFactor).
   const titlePx = isPhone
     ? Math.max(42, Math.min(72, cssW * 0.072))
     : isCompact
@@ -237,13 +238,22 @@ function WallMuralHtml({
               </span>
             </h2>
 
+            <p
+              className="mt-2 max-w-[38rem] leading-relaxed text-white/70"
+              style={{ fontSize: Math.max(16, cssW * 0.022), textShadow: inkShadow }}
+            >
+              NavMe transforms traditional museums into AR museums through
+              Digital Twins, indoor navigation, interactive exhibits, AI
+              guidance, and visitor analytics.
+            </p>
+
             <a
               href={CALENDLY_DEMO_URL}
               target="_blank"
               rel="noopener noreferrer"
               className="mt-3 inline-flex min-h-11 w-fit items-center border-b border-white/70 pb-1 font-semibold text-white"
               style={{
-                fontSize: Math.max(28, cssW * 0.042),
+                fontSize: Math.max(22, cssW * 0.032),
                 textShadow: inkShadow,
               }}
               onClick={(event) => event.stopPropagation()}
@@ -253,21 +263,42 @@ function WallMuralHtml({
               Schedule a Demo ↗
             </a>
 
-            <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3">
-              {FOOTER_COLUMNS.slice(0, 4).map((column) => (
-                <div key={column.title} className="min-w-0">
+            <div className="mt-5 flex items-start justify-between gap-6">
+              <div className="min-w-0 flex-1">
+                <h3
+                  className="font-semibold uppercase tracking-[0.18em] text-white/45"
+                  style={{ fontSize: headPx, textShadow: inkShadow }}
+                >
+                  {quickLinks?.title ?? "Quick Links"}
+                </h3>
+                <ul className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+                  {quickLinks?.links.map((link) => (
+                    <li key={link.label}>
+                      <FooterNavLink
+                        link={link}
+                        className="block min-h-10 py-1.5 text-left text-white/80 transition-colors hover:text-white active:text-white"
+                        style={{ fontSize: labelPx, textShadow: inkShadow }}
+                        navigate={navigate}
+                        goToJourney={goToJourney}
+                      />
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              {contact ? (
+                <div className="shrink-0 text-right">
                   <h3
-                    className="font-semibold text-white"
+                    className="font-semibold uppercase tracking-[0.18em] text-white/45"
                     style={{ fontSize: headPx, textShadow: inkShadow }}
                   >
-                    {column.title}
+                    {contact.title}
                   </h3>
                   <ul className="mt-2 space-y-0.5">
-                    {column.links.slice(0, 4).map((link) => (
+                    {contact.links.map((link) => (
                       <li key={link.label}>
                         <FooterNavLink
                           link={link}
-                          className="block min-h-10 max-w-full break-words py-1.5 text-left text-white transition-colors hover:text-white active:text-white"
+                          className="block min-h-10 py-1.5 text-right text-white/80 transition-colors hover:text-white active:text-white"
                           style={{ fontSize: labelPx, textShadow: inkShadow }}
                           navigate={navigate}
                           goToJourney={goToJourney}
@@ -276,72 +307,49 @@ function WallMuralHtml({
                     ))}
                   </ul>
                 </div>
-              ))}
+              ) : null}
             </div>
 
-            <div className="mt-3 flex flex-col gap-2 border-t border-white/20 pt-2">
-              <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-                <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <div className="mt-3 flex flex-col items-center gap-2 border-t border-white/20 pt-2">
+              {onLeaveMural ? (
                 <button
                   type="button"
-                  className="min-h-11 w-fit px-1 py-2 font-medium text-white active:opacity-80"
-                  style={{ fontSize: labelPx, textShadow: inkShadow }}
-                  onClick={(event) =>
-                    openFooterLink({ href: PRIVACY_URL }, event, navigate, goToJourney)
-                  }
-                >
-                  Privacy Policy
-                </button>
-                <button
-                  type="button"
-                  className="min-h-11 w-fit px-1 py-2 font-medium text-white active:opacity-80"
-                  style={{ fontSize: labelPx, textShadow: inkShadow }}
-                  onClick={(event) =>
-                    openFooterLink({ href: TERMS_URL }, event, navigate, goToJourney)
-                  }
-                >
-                  Terms & Conditions
-                </button>
-                {onLeaveMural ? (
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      event.preventDefault();
-                      event.stopPropagation();
-                      onLeaveMural();
-                    }}
-                    className="inline-flex min-h-11 w-fit items-center gap-1.5 rounded-full border border-white/20 bg-[rgba(10,18,36,0.72)] px-3 py-2 font-semibold text-white sm:ml-auto"
-                    style={{ fontSize: Math.max(13, labelPx), textShadow: inkShadow }}
-                    aria-label="Swipe down · Previous stop"
-                  >
-                    <span
-                      className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-white/25 text-[11px] text-white"
-                      aria-hidden
-                    >
-                      ↓
-                    </span>
-                    Swipe down
-                  </button>
-                ) : null}
-                </div>
-              </div>
-              <div className="flex flex-wrap items-center justify-center">
-                <p
-                  className="text-white"
-                  style={{
-                    fontSize: Math.max(14, cssW * 0.02),
-                    textShadow: inkShadow,
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    onLeaveMural();
                   }}
+                  className="inline-flex min-h-11 w-fit self-start items-center gap-1.5 rounded-full border border-white/20 bg-[rgba(10,18,36,0.72)] px-3 py-2 font-semibold text-white"
+                  style={{ fontSize: Math.max(13, labelPx), textShadow: inkShadow }}
+                  aria-label="Swipe down · Previous stop"
                 >
-                  © 2026 MetaDigi Labs. All Rights Reserved.
-                </p>
-              </div>
+                  <span
+                    className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-white/25 text-[11px] text-white"
+                    aria-hidden
+                  >
+                    ↓
+                  </span>
+                  Swipe down
+                </button>
+              ) : null}
+              <p
+                className="w-full text-center text-white"
+                style={{
+                  fontSize: Math.max(14, cssW * 0.02),
+                  textShadow: inkShadow,
+                }}
+              >
+                © 2026 MetaDigi Labs. All Rights Reserved.
+              </p>
             </div>
           </div>
         </div>
       </div>
     );
   }
+
+  const linkClass =
+    "text-white/75 transition-colors hover:text-white hover:underline hover:underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nm-primary";
 
   return (
     <div
@@ -364,56 +372,61 @@ function WallMuralHtml({
           }`}
         >
           <div
-            className={`relative shrink-0 border-b border-white/15 ${
-              isCompact ? "pb-2" : "pb-3"
-            }`}
+            className="max-w-[38rem] shrink-0"
             style={{ textShadow: inkShadow }}
           >
-            <div className="relative z-10 min-w-0 max-w-[92%]">
-              <h2
-                className="font-semibold leading-[1.05] tracking-tight text-white"
-                style={{ fontSize: titlePx }}
+            <h2
+              className="font-semibold leading-[1.05] tracking-tight text-white"
+              style={{ fontSize: titlePx }}
+            >
+              Navigate Smarter.
+              <span
+                className="mt-0.5 block text-white"
+                style={{ fontSize: subPx }}
               >
-                Navigate Smarter.
-                <span
-                  className="mt-0.5 block text-white"
-                  style={{ fontSize: subPx }}
-                >
-                  Experience Better.
-                </span>
-              </h2>
-              {isDesktop ? (
-                <p
-                  className="mt-2 max-w-[38rem] leading-relaxed text-white"
-                  style={{ fontSize: bodyPx }}
-                >
-                  NavMe transforms traditional museums into AR museums through
-                  Digital Twins, indoor navigation, interactive exhibits, AI
-                  guidance, and visitor analytics.
-                </p>
-              ) : null}
-            </div>
+                Experience Better.
+              </span>
+            </h2>
+            <p
+              className="mt-3 max-w-[34rem] leading-relaxed text-white/65"
+              style={{ fontSize: bodyPx }}
+            >
+              NavMe transforms traditional museums into AR museums through
+              Digital Twins, indoor navigation, interactive exhibits, AI
+              guidance, and visitor analytics.
+            </p>
+            <a
+              href={CALENDLY_DEMO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-5 inline-flex items-center rounded-full border border-white/30 bg-white/[0.08] px-5 py-2.5 font-semibold text-white transition-colors hover:border-white/50 hover:bg-white/[0.14] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nm-primary"
+              style={{ fontSize: isCompact ? 13 : 15, textShadow: inkShadow }}
+              onClick={(event) => event.stopPropagation()}
+              onPointerDown={(event) => event.stopPropagation()}
+              onTouchStart={(event) => event.stopPropagation()}
+            >
+              Schedule a Demo
+            </a>
           </div>
 
           <div
-            className={`mt-4 grid min-h-0 flex-1 content-start gap-x-5 gap-y-3 ${
-              isCompact ? "grid-cols-2" : "grid-cols-4"
-            }`}
+            className="mt-auto shrink-0"
+            style={{ textShadow: inkShadow }}
           >
-            {FOOTER_COLUMNS.map((column) => (
-              <div key={column.title} className="min-w-0">
+            <div className="flex items-start justify-between gap-12 border-t border-white/18 pt-6">
+              <div className="min-w-0 flex-1">
                 <h3
-                  className="font-semibold uppercase tracking-[0.14em] text-white"
-                  style={{ fontSize: headPx, textShadow: inkShadow }}
+                  className="font-semibold uppercase tracking-[0.22em] text-white/40"
+                  style={{ fontSize: headPx }}
                 >
-                  {column.title}
+                  {quickLinks?.title ?? "Quick Links"}
                 </h3>
-                <ul className={`mt-2.5 ${isCompact ? "space-y-1" : "space-y-1.5"}`}>
-                  {column.links.map((link) => (
+                <ul className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2">
+                  {quickLinks?.links.map((link) => (
                     <li key={link.label}>
                       <FooterNavLink
                         link={link}
-                        className="block max-w-full break-words text-left text-white transition-colors hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nm-primary"
+                        className={linkClass}
                         style={{ fontSize: labelPx, textShadow: inkShadow }}
                         navigate={navigate}
                         goToJourney={goToJourney}
@@ -422,85 +435,71 @@ function WallMuralHtml({
                   ))}
                 </ul>
               </div>
-            ))}
-          </div>
+              {contact ? (
+                <div className="shrink-0 text-right">
+                  <h3
+                    className="font-semibold uppercase tracking-[0.22em] text-white/40"
+                    style={{ fontSize: headPx }}
+                  >
+                    {contact.title}
+                  </h3>
+                  <ul className="mt-3 flex flex-col items-end gap-2">
+                    {contact.links.map((link) => (
+                      <li key={link.label}>
+                        <FooterNavLink
+                          link={link}
+                          className={linkClass}
+                          style={{ fontSize: labelPx, textShadow: inkShadow }}
+                          navigate={navigate}
+                          goToJourney={goToJourney}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </div>
 
-          <div
-            className={`mt-auto flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/15 ${
-              isCompact ? "pt-2.5" : "pt-3"
-            }`}
-          >
-            {onLeaveMural ? (
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  onLeaveMural();
-                }}
-                className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/25 bg-[rgba(10,18,36,0.75)] px-3 py-1.5 font-semibold text-white transition-colors hover:border-white/45 hover:bg-[rgba(16,28,52,0.88)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nm-primary sm:px-4 sm:py-2"
-                style={{
-                  fontSize: isCompact ? 11 : 13,
-                  textShadow: inkShadow,
-                }}
-                aria-label={
-                  isPhone ? "Swipe down · Previous stop" : "Scroll down · Previous stop"
-                }
-              >
-                <span
-                  className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-white/25 text-[11px] text-white"
-                  aria-hidden
-                >
-                  ↓
-                </span>
-                {isPhone ? "Swipe down" : "Scroll down"}
-              </button>
-            ) : null}
-
-            <p
-              className="text-white"
-              style={{ fontSize: isCompact ? 10 : 12, textShadow: inkShadow }}
+            <div
+              className={`relative mt-5 flex items-center border-t border-white/12 ${
+                isCompact ? "pt-2.5" : "pt-3.5"
+              }`}
             >
-              © 2026 MetaDigi Labs. All Rights Reserved.
-            </p>
+              {onLeaveMural ? (
+                <button
+                  type="button"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    onLeaveMural();
+                  }}
+                  className="relative z-10 inline-flex shrink-0 items-center gap-1.5 rounded-full border border-white/25 bg-[rgba(10,18,36,0.75)] px-3 py-1.5 font-semibold text-white transition-colors hover:border-white/45 hover:bg-[rgba(16,28,52,0.88)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nm-primary sm:px-4 sm:py-2"
+                  style={{
+                    fontSize: isCompact ? 11 : 13,
+                    textShadow: inkShadow,
+                  }}
+                  aria-label={
+                    isPhone
+                      ? "Swipe down · Previous stop"
+                      : "Scroll down · Previous stop"
+                  }
+                >
+                  <span
+                    className="inline-flex h-5 w-5 items-center justify-center rounded-full border border-white/25 text-[11px] text-white"
+                    aria-hidden
+                  >
+                    ↓
+                  </span>
+                  {isPhone ? "Swipe down" : "Scroll down"}
+                </button>
+              ) : null}
 
-            <div className="ml-auto flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                className="rounded-full border border-white/45 bg-transparent px-3 py-1.5 font-medium text-white transition-colors hover:border-white hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nm-primary sm:px-4"
-                style={{
-                  fontSize: isCompact ? 11 : 12,
-                  textShadow: inkShadow,
-                }}
-                onClick={(event) =>
-                  openFooterLink(
-                    { href: PRIVACY_URL },
-                    event,
-                    navigate,
-                    goToJourney,
-                  )
-                }
+              <p
+                className="pointer-events-none absolute inset-x-0 text-center text-white/45"
+                style={{ fontSize: isCompact ? 10 : 12, textShadow: inkShadow }}
               >
-                Privacy Policy
-              </button>
-              <button
-                type="button"
-                className="rounded-full border border-white/45 bg-transparent px-3 py-1.5 font-medium text-white transition-colors hover:border-white hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nm-primary sm:px-4"
-                style={{
-                  fontSize: isCompact ? 11 : 12,
-                  textShadow: inkShadow,
-                }}
-                onClick={(event) =>
-                  openFooterLink(
-                    { href: TERMS_URL },
-                    event,
-                    navigate,
-                    goToJourney,
-                  )
-                }
-              >
-                Terms & Conditions
-              </button>
+                © 2026 MetaDigi Labs. All Rights Reserved.
+              </p>
             </div>
           </div>
         </div>

@@ -34,7 +34,7 @@ export function WelcomeCard() {
       size="lg"
       className="overflow-hidden [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
       title="NavMe"
-      subtitle="A Spatial AI Layer for Physical Spaces"
+      subtitle="Welcome"
       body="NavMe connects physical museums with a digital experience layer, helping visitors navigate, discover, learn and engage, while enabling museums to understand how their spaces are explored and experienced."
     >
       <p className="shrink-0 text-[12px] leading-snug text-nm-muted">

@@ -95,8 +95,8 @@ export function ArFeatureRoll({
               className={cn(
                 "absolute left-1/2 top-1/2 overflow-hidden rounded-xl border text-left transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
                 active
-                  ? "z-20 h-[8.5rem] w-[11.25rem] -translate-x-1/2 -translate-y-1/2 border-[#6ecfc8]/55 shadow-[0_0_0_1px_rgba(110,207,200,0.18),0_18px_40px_rgba(0,0,0,0.45)]"
-                  : "z-10 h-[7rem] w-[8.5rem] -translate-y-1/2 scale-[0.92] border-white/12 opacity-55 shadow-[0_12px_28px_rgba(0,0,0,0.35)] hover:opacity-75",
+                  ? "z-20 h-[8.5rem] w-[11.25rem] -translate-x-1/2 -translate-y-1/2 border-[#6ecfc8]/55 bg-[#1a1610] shadow-[0_0_0_1px_rgba(110,207,200,0.18),0_18px_40px_rgba(0,0,0,0.45)]"
+                  : "z-10 h-[7rem] w-[8.5rem] -translate-y-1/2 scale-[0.92] border-white/12 bg-[#1a1610] opacity-55 shadow-[0_12px_28px_rgba(0,0,0,0.35)] hover:opacity-75",
               )}
               style={
                 active
@@ -112,18 +112,12 @@ export function ArFeatureRoll({
               }
               aria-current={active ? "true" : undefined}
             >
-              <img
-                src={item.src}
-                alt=""
-                className="h-full w-full object-cover"
-                draggable={false}
-              />
               <div
                 className={cn(
                   "pointer-events-none absolute inset-0",
                   active
-                    ? "bg-gradient-to-t from-[#1a1610]/85 via-transparent to-[#1a1610]/25"
-                    : "bg-[#1a1610]/45",
+                    ? "bg-gradient-to-t from-[#1a1610] via-[#1a1610]/40 to-transparent"
+                    : "bg-[#1a1610]/20",
                 )}
                 aria-hidden
               />
@@ -146,7 +140,11 @@ export function ArFeatureRoll({
                     </p>
                   </div>
                 </>
-              ) : null}
+              ) : (
+                <p className="absolute inset-x-0 bottom-0 p-2 text-[11px] font-semibold tracking-tight text-white/80">
+                  {item.title}
+                </p>
+              )}
             </button>
           );
         })}

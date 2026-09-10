@@ -32,7 +32,7 @@ export function GpsFailsCard() {
   return (
     <DestinationCard
       title="The Museum Starts Where Google Maps Stops."
-      subtitle="The Problem"
+      subtitle="Problem"
       body="Visitors can reach the museum. But once inside, the experience becomes physical, fragmented and often difficult to navigate."
     >
       <ul

@@ -1,4 +1,3 @@
-import { BLOG_PATH } from "@/constants/blog/types";
 import {
   CONTACT_EMAIL,
   CONTACT_MAILTO,
@@ -26,36 +25,11 @@ export const FOOTER_COLUMNS: readonly FooterColumn[] = [
   {
     title: "Quick Links",
     links: [
-      { label: "Home", href: "#hero", journeyId: "welcome" },
-      { label: "Digital Twin", href: "#how-it-works", journeyId: "vps" },
-      { label: "How NavMe Converts", href: "#industries", journeyId: "industries" },
-      { label: "Blog", href: BLOG_PATH },
-      { label: "Navigate", href: "#features", journeyId: "mapping" },
-      { label: "Contact", href: "#contact", journeyId: "complete" },
-    ],
-  },
-  {
-    title: "Solutions",
-    links: [
-      { label: "Museums", href: "#industries", journeyId: "industries" },
-      { label: "Science Museums", href: "#industries", journeyId: "industries" },
-      { label: "Government Museums", href: "#industries", journeyId: "industries" },
-      { label: "Cultural Institutions", href: "#industries", journeyId: "industries" },
-      { label: "Art Museums", href: "#industries", journeyId: "industries" },
-    ],
-  },
-  {
-    title: "Services",
-    links: [
-      { label: "Museum Exploration", href: "#features", journeyId: "mapping" },
-      { label: "Digital Twin", href: "#vps", journeyId: "vps" },
+      { label: "Problem", href: "#why-gps", journeyId: "gps-fails" },
+      { label: "Solution", href: "#how-it-works", journeyId: "vps" },
+      { label: "Guide", href: "#features", journeyId: "mapping" },
       { label: "Insights", href: "#analytics", journeyId: "analytics" },
-      { label: "Visitor Analytics", href: "#analytics", journeyId: "analytics" },
-      {
-        label: "Convert to AR Museum",
-        href: "#industries",
-        journeyId: "industries",
-      },
+      { label: "Benefits", href: "#industries", journeyId: "industries" },
     ],
   },
   {

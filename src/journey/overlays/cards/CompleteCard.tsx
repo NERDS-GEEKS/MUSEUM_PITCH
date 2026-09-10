@@ -40,7 +40,7 @@ export function CompleteCard() {
   return (
     <DestinationCard
       title="The Future Museum Is Phygital"
-      subtitle="From Maps to Experiences."
+      subtitle="Connect"
       body="NavMe turns a static physical space into a living, interactive and measurable destination."
       showCtas={false}
     >

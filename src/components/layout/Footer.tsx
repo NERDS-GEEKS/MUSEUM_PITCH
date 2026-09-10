@@ -4,12 +4,7 @@ import {
   CONTACT_EMAIL,
   CONTACT_MAILTO,
 } from "@/constants/contact";
-import { BLOG_PATH } from "@/constants/blog/types";
-import { FOOTER_COLUMNS, FOOTER_SOCIAL } from "@/constants/footer";
-import { PRIVACY_PATH, TERMS_PATH } from "@/constants/legal/types";
-import { requestReturnToFinish } from "@/journey/returnToFinishStore";
-import { cn } from "@/utils/cn";
-import { Link } from "react-router-dom";
+import { FOOTER_COLUMNS } from "@/constants/footer";
 
 export function Footer() {
   return (
@@ -82,7 +77,7 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-14 grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-14 grid gap-10 sm:grid-cols-2">
           {FOOTER_COLUMNS.map((column) => (
             <div key={column.title}>
               <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-nm-text">
@@ -107,54 +102,10 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="mt-14 flex flex-col gap-6 border-t border-nm-border pt-8 md:flex-row md:items-center md:justify-between">
-          <ul className="flex flex-wrap gap-3">
-            {FOOTER_SOCIAL.map((item) => (
-              <li key={item.label}>
-                <a
-                  href={item.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={cn(
-                    "inline-flex h-10 items-center rounded-full border border-nm-border bg-nm-glass px-4 text-sm text-nm-muted backdrop-blur-md transition-colors",
-                    "hover:text-nm-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nm-primary",
-                  )}
-                >
-                  {item.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-          <div className="flex flex-wrap items-center gap-3 text-sm text-nm-muted">
-            <Link
-              to={PRIVACY_PATH}
-              className="transition-colors hover:text-nm-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nm-primary"
-              onClick={() => requestReturnToFinish()}
-            >
-              Privacy Policy
-            </Link>
-            <span aria-hidden>·</span>
-            <Link
-              to={TERMS_PATH}
-              className="transition-colors hover:text-nm-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nm-primary"
-              onClick={() => requestReturnToFinish()}
-            >
-              Terms & Conditions
-            </Link>
-            <span aria-hidden>·</span>
-            <Link
-              to={BLOG_PATH}
-              className="transition-colors hover:text-nm-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nm-primary"
-            >
-              Blog
-            </Link>
-            <span aria-hidden className="hidden sm:inline">
-              ·
-            </span>
-            <p className="w-full sm:w-auto">
-              © 2026 NavMe. All Rights Reserved.
-            </p>
-          </div>
+        <div className="mt-14 border-t border-nm-border pt-8">
+          <p className="text-center text-sm text-nm-muted">
+            © 2026 NavMe. All Rights Reserved.
+          </p>
         </div>
       </div>
     </footer>

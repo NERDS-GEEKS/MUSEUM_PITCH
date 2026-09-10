@@ -18,13 +18,13 @@ const JOURNEY_CHROME_MUTED = "rgba(196,165,116,0.4)";
 
 /** Top-nav keywords - short labels for journey destinations. */
 const NAV_KEYWORDS: Record<string, string> = {
-  welcome: "Museum",
+  welcome: "Welcome",
   "gps-fails": "Problem",
-  vps: "Twin",
-  mapping: "Navigate",
+  vps: "Solution",
+  mapping: "Guide",
   analytics: "Insights",
-  industries: "Convert",
-  complete: "Future",
+  industries: "Benefits",
+  complete: "Connect",
 };
 
 const DEMO_NODE = JOURNEY_NODES.find((n) => n.id === "industries");
@@ -479,7 +479,7 @@ export function JourneyHUD() {
                 "transition-colors hover:border-nm-primary/60 hover:bg-[rgba(42,34,26,0.92)]",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-nm-primary/80",
               )}
-              aria-label="Exit Connect wall and return to Convert"
+              aria-label="Exit Connect wall and return to Benefits"
             >
               <ArrowLeft
                 className="h-4 w-4 shrink-0 text-nm-primary"

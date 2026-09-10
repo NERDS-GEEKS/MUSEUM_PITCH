@@ -1,11 +1,8 @@
 import { BLOG_PATH } from "@/constants/blog/types";
-import { CALENDLY_DEMO_URL } from "@/constants/contact";
 import { FOOTER_COLUMNS, type FooterLink } from "@/constants/footer";
 import {
   PRIVACY_PATH,
-  PRIVACY_URL,
   TERMS_PATH,
-  TERMS_URL,
 } from "@/constants/legal/types";
 import { JOURNEY_NODES } from "@/journey/constants/nodes";
 import {
@@ -24,9 +21,6 @@ const PREV_NODE =
 
 const inkShadow =
   "0 1px 2px rgba(0,0,0,0.55), 0 0 14px rgba(8,14,28,0.3)";
-
-/** Keep the phone dock short: 3 links max per column. */
-const LINKS_PER_COLUMN = 3;
 
 type GoToJourney = (dockT: number) => void;
 
@@ -94,14 +88,18 @@ function FooterNavLink({
   link,
   navigate,
   goToJourney,
+  align = "left",
 }: {
   link: FooterLink;
   navigate: NavigateFunction;
   goToJourney: GoToJourney;
+  align?: "left" | "right";
 }) {
   const label = shortLabel(link.label);
   const className =
-    "block w-full truncate py-0.5 text-left text-[12px] leading-tight text-white active:text-white";
+    align === "right"
+      ? "block w-full truncate py-0.5 text-right text-[12px] leading-tight text-white/80 active:text-white"
+      : "block w-full truncate py-0.5 text-left text-[12px] leading-tight text-white/80 active:text-white";
 
   if (!link.journeyId && isNativeFooterHref(link.href)) {
     const external = link.href.startsWith("http");
@@ -198,93 +196,79 @@ export function FinishFooterOverlay() {
         data-footer-interactive
         data-allow-scroll
       >
-        <div className="flex items-end justify-between gap-3">
-          <div className="min-w-0 flex-1">
+        <div className="flex items-end justify-between gap-6">
+          <div className="min-w-0 max-w-[22rem] flex-1">
             <h2 className="text-[1.35rem] font-semibold leading-[1.08] tracking-tight text-white sm:text-[1.5rem]">
               Navigate Smarter.
               <span className="mt-0.5 block text-[1.05rem] font-medium text-white sm:text-[1.15rem]">
                 Experience Better.
               </span>
             </h2>
-            <a
-              href={CALENDLY_DEMO_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-2 inline-flex items-center border-b border-white/55 pb-0.5 text-[0.95rem] font-semibold text-white"
-            >
-              Schedule a Demo ↗
-            </a>
+            <p className="mt-2 text-[12px] leading-relaxed text-white/70 sm:text-[13px]">
+              NavMe transforms traditional museums into AR museums through
+              Digital Twins, indoor navigation, interactive exhibits, AI
+              guidance, and visitor analytics.
+            </p>
           </div>
-          <button
-            type="button"
-            onClick={onLeaveMural}
-            className="inline-flex shrink-0 items-center gap-1 rounded-full border border-white/20 bg-[rgba(10,18,36,0.75)] px-2.5 py-1.5 text-[11px] font-semibold text-white"
-            aria-label="Swipe down · Previous stop"
-          >
-            <span
-              className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/25 text-[10px] text-white"
-              aria-hidden
+          <div className="flex shrink-0 flex-col items-end gap-2">
+            <button
+              type="button"
+              onClick={onLeaveMural}
+              className="inline-flex items-center gap-1 rounded-full border border-white/20 bg-[rgba(10,18,36,0.75)] px-2.5 py-1.5 text-[11px] font-semibold text-white"
+              aria-label="Swipe down · Previous stop"
             >
-              ↓
-            </span>
-            Back
-          </button>
-        </div>
-
-        <div className="mt-3 grid grid-cols-4 gap-x-2 border-t border-white/15 pt-2.5">
-          {FOOTER_COLUMNS.slice(0, 4).map((column) => (
-            <div key={column.title} className="min-w-0">
-              <h3 className="truncate text-[10px] font-semibold uppercase tracking-[0.08em] text-white">
-                {column.title}
+              <span
+                className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-white/25 text-[10px] text-white"
+                aria-hidden
+              >
+                ↓
+              </span>
+              Back
+            </button>
+            <div className="text-right">
+              <h3 className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
+                Contact
               </h3>
               <ul className="mt-1 space-y-0">
-                {column.links.slice(0, LINKS_PER_COLUMN).map((link) => (
-                  <li key={link.label}>
-                    <FooterNavLink
-                      link={link}
-                      navigate={navigate}
-                      goToJourney={goToJourney}
-                    />
-                  </li>
-                ))}
+                {FOOTER_COLUMNS.find((column) => column.title === "Contact")?.links.map(
+                  (link) => (
+                    <li key={link.label}>
+                      <FooterNavLink
+                        link={link}
+                        navigate={navigate}
+                        goToJourney={goToJourney}
+                        align="right"
+                      />
+                    </li>
+                  ),
+                )}
               </ul>
             </div>
-          ))}
+          </div>
         </div>
 
-        <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-white/12 pt-2">
-          <div className="flex min-w-0 items-center gap-3">
-            <button
-              type="button"
-              className="text-[11px] font-medium text-white active:text-white"
-              onClick={(event) =>
-                openFooterLink(
-                  { href: PRIVACY_URL },
-                  event,
-                  navigate,
-                  goToJourney,
-                )
-              }
-            >
-              Privacy
-            </button>
-            <button
-              type="button"
-              className="text-[11px] font-medium text-white active:text-white"
-              onClick={(event) =>
-                openFooterLink(
-                  { href: TERMS_URL },
-                  event,
-                  navigate,
-                  goToJourney,
-                )
-              }
-            >
-              Terms
-            </button>
-          </div>
-          <p className="shrink-0 text-[10px] text-white">
-            © 2026 MetaDigi Labs
+        <div className="mt-3 border-t border-white/15 pt-2.5">
+          <h3 className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/45">
+            Quick Links
+          </h3>
+          <ul className="mt-1.5 flex flex-wrap gap-x-4 gap-y-1">
+            {FOOTER_COLUMNS.find(
+              (column) => column.title === "Quick Links",
+            )?.links.map((link) => (
+              <li key={link.label}>
+                <FooterNavLink
+                  link={link}
+                  navigate={navigate}
+                  goToJourney={goToJourney}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="mt-2.5 border-t border-white/12 pt-2">
+          <p className="w-full text-center text-[10px] text-white/50">
+            © 2026 MetaDigi Labs. All Rights Reserved.
           </p>
         </div>
       </div>
