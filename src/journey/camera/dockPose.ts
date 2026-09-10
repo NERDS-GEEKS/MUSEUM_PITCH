@@ -1,3 +1,8 @@
+import {
+  isPortraitAspect,
+  PORTRAIT_CAMERA_PULLBACK,
+  storyBoardForAspect,
+} from "@/journey/camera/galleryFrame";
 import { createLinearRouteCurve } from "@/journey/path/routeCurve";
 import {
   FINISH_WALL_FRAME,
@@ -69,6 +74,7 @@ export function poseAtDock(
   dockT: number,
   outPos: Vector3,
   outLook: Vector3,
+  aspect = 16 / 9,
 ): void {
   const room = roomAtDockT(dockT);
   if (!room || room.id === "complete") {
@@ -78,6 +84,19 @@ export function poseAtDock(
   const [cx, cy, cz] = room.center;
   const index = STORY_ROOMS.findIndex((item) => item.id === room.id);
   const sign = roomLookSign(index);
+
+  if (isPortraitAspect(aspect)) {
+    // Phone: face the story plaque head-on so the full card is on screen.
+    const board = storyBoardForAspect(aspect);
+    const rightSign = -sign;
+    const wallX = cx + rightSign * (room.size[0] / 2 - 0.2);
+    const away = -rightSign * PORTRAIT_CAMERA_PULLBACK;
+    outPos.set(cx + away, cy + EYE_HEIGHT, cz);
+    // Look a little above the plaque so HUD chrome does not cover the title.
+    outLook.set(wallX, cy + board.centerY + 0.18, cz);
+    return;
+  }
+
   outPos.set(cx, cy + EYE_HEIGHT, cz - sign * BEHIND_METERS);
   // Look down the gallery so both side walls peek: story on the right,
   // welcome video on the left.
@@ -181,6 +200,12 @@ export function poseAtFinishZoom(
 export function smoothstep01(u: number): number {
   const x = MathUtils.clamp(u, 0, 1);
   return x * x * (3 - 2 * x);
+}
+
+/** Gentler ease-in-out for gallery-to-gallery travel. */
+export function smootherstep01(u: number): number {
+  const x = MathUtils.clamp(u, 0, 1);
+  return x * x * x * (x * (x * 6 - 15) + 10);
 }
 
 /** World XZ at a progress point (for companion straight hops). */

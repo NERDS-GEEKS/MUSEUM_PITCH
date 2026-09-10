@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/Button";
 import { DestinationCard } from "@/journey/overlays/DestinationCard";
 import { setExperienceVideoOpen } from "@/journey/overlays/experienceVideoStore";
+import { storyItemGridClass } from "./peakShared";
 
 const HERO_TAGS = [
   "Browser Native",
@@ -52,7 +53,9 @@ export function WelcomeCard() {
         ))}
       </div>
 
-      <dl className="mt-3 grid min-h-0 flex-1 grid-cols-4 gap-2">
+      <dl
+        className={`mt-3 min-h-0 flex-1 ${storyItemGridClass(HERO_PILLARS.length)}`}
+      >
         {HERO_PILLARS.map((pillar) => (
           <div
             key={pillar.label}

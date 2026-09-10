@@ -1,3 +1,4 @@
+import { smootherstep01 } from "@/journey/camera/dockPose";
 import { getActiveNode, JOURNEY_NODES } from "@/journey/constants/nodes";
 import { isInteractiveTarget } from "@/journey/input/isInteractiveTarget";
 import {
@@ -28,13 +29,13 @@ import { useEffect, useRef } from "react";
 /** One clear wheel flick / notch → next stop (slightly easier). */
 const WHEEL_STEP_THRESHOLD = 22;
 /** Touch swipe distance (px) to change stop. */
-const TOUCH_STEP_THRESHOLD = 28;
+const TOUCH_STEP_THRESHOLD = 22;
 /** Prevent trackpad inertia from skipping many stops. */
-const STEP_COOLDOWN_MS = 480;
+const STEP_COOLDOWN_MS = 420;
 /** Short hop (adjacent stop) travel time. */
-const MIN_TRAVEL_S = 0.85;
+const MIN_TRAVEL_S = 1.15;
 /** Long jump (e.g. Intro → Finish via nav) travel time cap. */
-const MAX_TRAVEL_S = 2.8;
+const MAX_TRAVEL_S = 3.2;
 const SETTLE_EPS = 0.00008;
 const PHONE_MAX_PX = 767;
 
@@ -67,7 +68,7 @@ function travelDuration(from: number, to: number, routeMode: boolean): number {
   if (routeMode && crossesFloor) {
     return Math.min(4.8, Math.max(2.6, dist * 24));
   }
-  const raw = routeMode ? dist * 14 : dist * 10.5;
+  const raw = routeMode ? dist * 16 : dist * 12;
   return Math.min(MAX_TRAVEL_S, Math.max(MIN_TRAVEL_S, raw));
 }
 
@@ -82,14 +83,15 @@ export function JourneyZoomController({
 }) {
   const store = useJourneyProgressStore();
   const targetRef = useRef(store.progress);
-  const speedRef = useRef(0.25);
+  const travelFromRef = useRef(store.progress);
+  const travelDurRef = useRef(MIN_TRAVEL_S);
+  const travelStartedAtRef = useRef(0);
   const wheelAccRef = useRef(0);
   const touchYRef = useRef<number | null>(null);
   const touchAccRef = useRef(0);
   const ignoreGestureRef = useRef(false);
   const lastStepAtRef = useRef(0);
   const rafRef = useRef<number | null>(null);
-  const lastTsRef = useRef(0);
   const enabledRef = useRef(enabled);
   enabledRef.current = enabled;
 
@@ -103,26 +105,23 @@ export function JourneyZoomController({
 
     const tick = (ts: number) => {
       rafRef.current = null;
-      const prev = lastTsRef.current || ts;
-      lastTsRef.current = ts;
-      const dt = Math.min(0.05, Math.max(0.001, (ts - prev) / 1000));
-
-      const current = store.progress;
+      const durationMs = Math.max(16, travelDurRef.current * 1000);
+      const started = travelStartedAtRef.current || ts;
+      travelStartedAtRef.current = started;
+      const u = Math.min(1, (ts - started) / durationMs);
+      const e = smootherstep01(u);
+      const from = travelFromRef.current;
       const target = targetRef.current;
-      const remaining = target - current;
-      const dist = Math.abs(remaining);
+      const next = from + (target - from) * e;
+      const remaining = target - next;
 
-      if (dist < SETTLE_EPS) {
+      if (u >= 1 || Math.abs(remaining) < SETTLE_EPS) {
         store.setProgress(target, { immediate: true });
         store.setTravelIntent(0);
         clearTravelSegment();
-        lastTsRef.current = 0;
-        speedRef.current = 0;
         return;
       }
 
-      const step = Math.min(dist, speedRef.current * dt);
-      const next = current + Math.sign(remaining) * step;
       store.setTravelIntent(remaining < 0 ? -1 : 1);
       store.setProgress(next, { immediate: true, silent: true });
       rafRef.current = window.requestAnimationFrame(tick);
@@ -130,7 +129,6 @@ export function JourneyZoomController({
 
     const schedule = () => {
       if (rafRef.current == null) {
-        lastTsRef.current = 0;
         rafRef.current = window.requestAnimationFrame(tick);
       }
     };
@@ -143,12 +141,13 @@ export function JourneyZoomController({
         store.setProgress(fromDock, { immediate: true, silent: true });
       }
       targetRef.current = toDock;
+      travelFromRef.current = fromDock;
       setTravelSegment(fromDock, toDock);
       const seg = getTravelSegment();
       const routeMode = seg?.mode === "route";
       const dur = travelDuration(fromDock, toDock, Boolean(routeMode));
-      const dist = Math.abs(toDock - fromDock);
-      speedRef.current = dist < 1e-6 ? 0.25 : dist / dur;
+      travelDurRef.current = dur;
+      travelStartedAtRef.current = performance.now();
       store.setTravelIntent(
         toDock < fromDock - 1e-6 ? -1 : toDock > fromDock + 1e-6 ? 1 : 0,
       );
