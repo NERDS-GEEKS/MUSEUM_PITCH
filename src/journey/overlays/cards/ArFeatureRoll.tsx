@@ -75,8 +75,8 @@ export function ArFeatureRoll({
   };
 
   return (
-    <div className="relative flex min-h-0 w-full flex-1 flex-col justify-center">
-      <div className="relative mx-auto h-[9.75rem] w-full max-w-[28rem]">
+    <div className="relative w-full shrink-0 overflow-hidden">
+      <div className="relative mx-auto h-[8.25rem] w-full max-w-[28rem] overflow-hidden">
         {items.map((item, i) => {
           const offset = i - index;
           const abs = Math.abs(offset);
@@ -95,14 +95,14 @@ export function ArFeatureRoll({
               className={cn(
                 "absolute left-1/2 top-1/2 overflow-hidden rounded-xl border text-left transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]",
                 active
-                  ? "z-20 h-[8.5rem] w-[11.25rem] -translate-x-1/2 -translate-y-1/2 border-[#6ecfc8]/55 bg-[#1a1610] shadow-[0_0_0_1px_rgba(110,207,200,0.18),0_18px_40px_rgba(0,0,0,0.45)]"
-                  : "z-10 h-[7rem] w-[8.5rem] -translate-y-1/2 scale-[0.92] border-white/12 bg-[#1a1610] opacity-55 shadow-[0_12px_28px_rgba(0,0,0,0.35)] hover:opacity-75",
+                  ? "z-20 h-[7.1rem] w-[10.5rem] -translate-x-1/2 -translate-y-1/2 border-[#6ecfc8]/55 bg-[#1a1610] shadow-[0_0_0_1px_rgba(110,207,200,0.18),0_18px_40px_rgba(0,0,0,0.45)]"
+                  : "z-10 h-[6rem] w-[8rem] -translate-y-1/2 scale-[0.92] border-white/12 bg-[#1a1610] opacity-55 shadow-[0_12px_28px_rgba(0,0,0,0.35)] hover:opacity-75",
               )}
               style={
                 active
                   ? undefined
                   : {
-                      transform: `translate(calc(-50% + ${side * (abs === 1 ? 5.4 : 8.6)}rem), -50%) scale(${abs === 1 ? 0.9 : 0.78})`,
+                      transform: `translate(calc(-50% + ${side * (abs === 1 ? 5.1 : 8.2)}rem), -50%) scale(${abs === 1 ? 0.9 : 0.78})`,
                       zIndex: 10 - abs,
                       opacity: abs === 1 ? 0.55 : 0.28,
                     }

@@ -69,7 +69,7 @@ export function DestinationCard({
 
       <div
         className={cn(
-          "relative flex min-h-0 flex-1 flex-col",
+          "relative z-10 flex min-h-0 shrink-0 flex-col",
           onClose && "pr-8",
         )}
       >
@@ -105,18 +105,18 @@ export function DestinationCard({
             {body}
           </p>
         ) : null}
-        {children ? (
-          <div
-            className={cn(
-              "flex min-h-0 flex-1 flex-col",
-              hideIntroOnMobile ? "mt-0 md:mt-3" : "mt-3",
-            )}
-          >
-            {children}
-          </div>
-        ) : null}
-        {showCtas ? <PanelCtaButtons /> : null}
       </div>
+      {children ? (
+        <div
+          className={cn(
+            "relative z-0 flex min-h-0 flex-1 flex-col overflow-hidden",
+            hideIntroOnMobile ? "mt-2 md:mt-3" : "mt-3",
+          )}
+        >
+          {children}
+        </div>
+      ) : null}
+      {showCtas ? <PanelCtaButtons /> : null}
     </GlassPanel>
   );
 }

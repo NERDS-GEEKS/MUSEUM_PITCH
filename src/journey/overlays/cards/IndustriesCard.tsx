@@ -43,7 +43,7 @@ export function IndustriesCard() {
         onIndexChange={onIndexChange}
         onReset={onReset}
       />
-      <div className="mt-2 grid shrink-0 grid-cols-2 gap-2">
+      <div className="mt-2 grid min-h-0 flex-1 grid-cols-2 gap-2 overflow-hidden">
         <div className="rounded-xl border border-nm-border/60 bg-nm-secondary/40 px-2.5 py-2">
           <p className="text-[10px] font-medium uppercase tracking-[0.14em] text-nm-muted">
             Visitor Benefits
