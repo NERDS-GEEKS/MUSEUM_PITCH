@@ -52,4 +52,12 @@ describe("poseAtDock facing", () => {
     const { pos, look } = pose(ROOM_DOCK_T[6]);
     expect(look.z - pos.z).toBeGreaterThan(2);
   });
+
+  it("on a phone still faces the story plaque head-on", () => {
+    const pos = new Vector3();
+    const look = new Vector3();
+    poseAtDock(ROOM_DOCK_T[0], pos, look, 9 / 19.5);
+    expect(Math.abs(look.x - pos.x)).toBeGreaterThan(3);
+    expect(Math.abs(look.z - pos.z)).toBeLessThan(0.05);
+  });
 });

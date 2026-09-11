@@ -1,6 +1,12 @@
 import {
   getGalleryWallForRoom,
 } from "@/journey/camera/galleryWallStore";
+import {
+  galleryViewDistance,
+  isPortraitAspect,
+  journeyFovForAspect,
+  storyBoardForAspect,
+} from "@/journey/camera/galleryFrame";
 import { createLinearRouteCurve } from "@/journey/path/routeCurve";
 import {
   FINISH_WALL_FRAME,
@@ -67,7 +73,7 @@ function roomAtDockT(dockT: number): StoryRoom | undefined {
   return STORY_ROOMS[best];
 }
 
-/** Match CorridorExhibits wall-board placement. */
+/** Match CorridorExhibits wall-board placement (landscape default). */
 export const GALLERY_BOARD_CENTER_Y = 2.12;
 export const GALLERY_BOARD_INSET = 0.2;
 /** Stand this far back from the exhibit wall (robot / first-person view). */
@@ -81,11 +87,22 @@ function galleryWallSign(
   return wall === "left" ? look : -look;
 }
 
+function galleryStandBack(aspect: number): number {
+  const fov = journeyFovForAspect(aspect, JOURNEY_FOV);
+  const board = storyBoardForAspect(aspect);
+  if (!isPortraitAspect(aspect)) return WALL_STAND_BACK;
+  // Phone: step back only as far as needed so the portrait plaque fits.
+  return Math.max(WALL_STAND_BACK, galleryViewDistance(aspect, fov, board));
+}
+
 /**
  * Centered first-person framing at the exhibit wall
  * (camera stands where Nav would look — no side offset).
  */
-function galleryWallFraming(room: StoryRoom): {
+function galleryWallFraming(
+  room: StoryRoom,
+  aspect = 16 / 9,
+): {
   camX: number;
   camY: number;
   camZ: number;
@@ -98,13 +115,15 @@ function galleryWallFraming(room: StoryRoom): {
   const wall = getGalleryWallForRoom(room.id);
   const wallSign = galleryWallSign(index, wall);
   const [cx, cy, cz] = room.center;
+  const board = storyBoardForAspect(aspect);
   const wallX = cx + wallSign * (room.size[0] / 2 - GALLERY_BOARD_INSET);
+  const standBack = galleryStandBack(aspect);
   return {
-    camX: wallX - wallSign * WALL_STAND_BACK,
+    camX: wallX - wallSign * standBack,
     camY: cy + EYE_HEIGHT,
     camZ: cz,
     lookX: wallX,
-    lookY: cy + GALLERY_BOARD_CENTER_Y,
+    lookY: cy + board.centerY,
     lookZ: cz,
     wallSign,
   };
@@ -115,13 +134,14 @@ export function poseAtDock(
   dockT: number,
   outPos: Vector3,
   outLook: Vector3,
+  aspect = 16 / 9,
 ): void {
   const room = roomAtDockT(dockT);
   if (!room || room.id === "complete") {
     poseAlongRoute(dockT, outPos, outLook);
     return;
   }
-  const frame = galleryWallFraming(room);
+  const frame = galleryWallFraming(room, aspect);
   outPos.set(frame.camX, frame.camY, frame.camZ);
   outLook.set(frame.lookX, frame.lookY, frame.lookZ);
 }

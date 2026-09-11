@@ -9,6 +9,7 @@ import {
   poseAtIntro,
   smoothstep01,
 } from "@/journey/camera/dockPose";
+import { journeyFovForAspect } from "@/journey/camera/galleryFrame";
 import { getActiveNode, JOURNEY_NODES } from "@/journey/constants/nodes";
 import { getGalleryWallForRoom } from "@/journey/camera/galleryWallStore";
 import { isInteractiveTarget } from "@/journey/input/isInteractiveTarget";
@@ -79,25 +80,26 @@ function applyStraightHop(
     Math.abs(fromT - COMPLETE_T) < 0.02 || fromT >= COMPLETE_T - 0.01;
 
   if (fromFinish) {
-    poseAtDock(COMPLETE_T, _dockPos, _dockLook);
+    poseAtDock(COMPLETE_T, _dockPos, _dockLook, aspect);
     poseAtFinishZoom(_dockPos, _dockLook, _fromPos, _fromLook, 1, aspect);
   } else {
-    poseAtDock(fromT, _fromPos, _fromLook);
+    poseAtDock(fromT, _fromPos, _fromLook, aspect);
   }
 
   if (toFinish) {
-    poseAtDock(COMPLETE_T, _dockPos, _dockLook);
+    poseAtDock(COMPLETE_T, _dockPos, _dockLook, aspect);
     poseAtFinishZoom(_dockPos, _dockLook, _toPos, _toLook, 1, aspect);
   } else {
-    poseAtDock(toT, _toPos, _toLook);
+    poseAtDock(toT, _toPos, _toLook, aspect);
   }
 
   const e = smoothstep01(blend);
   _targetPos.lerpVectors(_fromPos, _toPos, e);
   _lookAt.lerpVectors(_fromLook, _toLook, e);
 
-  const fromFov = fromFinish ? FINISH_FOV : JOURNEY_FOV;
-  const toFov = toFinish ? FINISH_FOV : JOURNEY_FOV;
+  const sceneFov = journeyFovForAspect(aspect, JOURNEY_FOV);
+  const fromFov = fromFinish ? FINISH_FOV : sceneFov;
+  const toFov = toFinish ? FINISH_FOV : sceneFov;
   return {
     fov: MathUtils.lerp(fromFov, toFov, e),
   };
@@ -239,7 +241,7 @@ export function JourneyCamera({
     const aspect =
       size.width > 0 && size.height > 0 ? size.width / size.height : 16 / 9;
 
-    poseAtDock(WELCOME_T, _welcomePos, _welcomeLook);
+    poseAtDock(WELCOME_T, _welcomePos, _welcomeLook, aspect);
     poseAtIntro(_introPos, _introLook);
 
     const creditsTarget = getFinishCreditsTarget();
@@ -253,7 +255,8 @@ export function JourneyCamera({
     );
     setFinishCredits(credits);
 
-    let targetFov = JOURNEY_FOV;
+    const sceneFov = journeyFovForAspect(aspect, JOURNEY_FOV);
+    let targetFov = sceneFov;
     let posDamp = 5.2;
     let lookDamp = 5.6;
 
@@ -263,7 +266,7 @@ export function JourneyCamera({
       const e = smoothstep01(u);
       _targetPos.lerpVectors(_welcomePos, _introPos, e);
       _lookAt.lerpVectors(_welcomeLook, _introLook, e);
-      targetFov = MathUtils.lerp(JOURNEY_FOV, INTRO_FOV, e);
+      targetFov = MathUtils.lerp(sceneFov, INTRO_FOV, e);
       posDamp = 22;
       lookDamp = 20;
     } else {
@@ -279,12 +282,12 @@ export function JourneyCamera({
       } else if (mode === "route" || intent !== 0) {
         // Adjacent POI: pan along the navigation route
         poseAlongRoute(progress, _targetPos, _lookAt);
-        targetFov = JOURNEY_FOV;
+        targetFov = sceneFov;
         posDamp = 5.2;
         lookDamp = 5.6;
         // Leaving Connect: keep blending from wall-fill zoom → route (no snap).
         if (credits > 0.001) {
-          poseAtDock(COMPLETE_T, _dockPos, _dockLook);
+          poseAtDock(COMPLETE_T, _dockPos, _dockLook, aspect);
           poseAtFinishZoom(
             _dockPos,
             _dockLook,
@@ -295,14 +298,14 @@ export function JourneyCamera({
           );
           _targetPos.lerp(_zoomPos, credits);
           _lookAt.lerp(_zoomLook, credits);
-          targetFov = MathUtils.lerp(JOURNEY_FOV, FINISH_FOV, credits);
+          targetFov = MathUtils.lerp(sceneFov, FINISH_FOV, credits);
           posDamp = 7;
           lookDamp = 7;
         }
       } else {
         // Settled at a POI - wall-fill zoom when finish credits are open
         const dockT = getActiveNode(progress).dockT;
-        poseAtDock(dockT, _dockPos, _dockLook);
+        poseAtDock(dockT, _dockPos, _dockLook, aspect);
         if (credits > 0.001 && dockT >= COMPLETE_T - 0.04) {
           poseAtFinishZoom(
             _dockPos,
@@ -314,7 +317,7 @@ export function JourneyCamera({
           );
           _targetPos.copy(_zoomPos);
           _lookAt.copy(_zoomLook);
-          targetFov = MathUtils.lerp(JOURNEY_FOV, FINISH_FOV, credits);
+          targetFov = MathUtils.lerp(sceneFov, FINISH_FOV, credits);
           posDamp = 8;
           lookDamp = 8;
         } else {
