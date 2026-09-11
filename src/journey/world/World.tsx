@@ -34,6 +34,50 @@ const FOG = MUSEUM.fog;
 const WALL_H = ROOM_WALL_H;
 const WALL_T = HALL_WALL_T;
 
+function CeilingSpot({
+  position,
+  color,
+}: {
+  position: [number, number, number];
+  color: string;
+}) {
+  return (
+    <group position={position}>
+      <mesh>
+        <cylinderGeometry args={[0.09, 0.09, 0.05, 16]} />
+        <meshStandardMaterial
+          color="#5A524C"
+          metalness={0.55}
+          roughness={0.32}
+          emissive={color}
+          emissiveIntensity={0.25}
+        />
+      </mesh>
+      <mesh position={[0, -0.12, 0]}>
+        <cylinderGeometry args={[0.08, 0.16, 0.2, 16]} />
+        <meshStandardMaterial
+          color="#6A6058"
+          metalness={0.42}
+          roughness={0.38}
+          emissive={color}
+          emissiveIntensity={0.45}
+        />
+      </mesh>
+      <mesh position={[0, -0.22, 0]} rotation={[-Math.PI / 2, 0, 0]}>
+        <circleGeometry args={[0.12, 20]} />
+        <meshBasicMaterial color={color} toneMapped={false} />
+      </mesh>
+      <pointLight
+        position={[0, -0.42, 0]}
+        color={color}
+        intensity={4.4}
+        distance={10}
+        decay={2}
+      />
+    </group>
+  );
+}
+
 function WallBox({
   position,
   size,
@@ -234,6 +278,16 @@ function RoomShell({
         <boxGeometry args={[2.6, 0.06, 1.2]} />
         <meshBasicMaterial color={theme.light} toneMapped={false} />
       </mesh>
+      <CeilingSpot position={[cx - 2.4, WALL_H - 0.12, cz]} color={theme.light} />
+      <CeilingSpot position={[cx + 2.4, WALL_H - 0.12, cz]} color={theme.light} />
+      <CeilingSpot
+        position={[cx, WALL_H - 0.12, cz + halfD * 0.35]}
+        color={theme.light}
+      />
+      <CeilingSpot
+        position={[cx, WALL_H - 0.12, cz - halfD * 0.35]}
+        color={theme.light}
+      />
       {solidExit ? (
         <SolidWall
           position={[cx, 0, cz + halfD]}
@@ -357,6 +411,7 @@ function HallShell({
           polygonOffsetUnits={1}
         />
       </mesh>
+      <CeilingSpot position={[cx, WALL_H - 0.12, cz]} color={MUSEUM.light} />
     </group>
   );
 }
@@ -382,11 +437,11 @@ export function World() {
       <fog attach="fog" args={[FOG, 18, 56]} />
       <color attach="background" args={[FOG]} />
 
-      <ambientLight intensity={0.92} />
-      <hemisphereLight args={[MUSEUM.light, "#3a342e", 0.72]} />
+      <ambientLight intensity={1.05} />
+      <hemisphereLight args={[MUSEUM.light, "#3a342e", 0.82]} />
       <directionalLight
         position={[6, 22 + FLOOR_RISE * 2, midZ]}
-        intensity={0.68}
+        intensity={0.82}
         color={MUSEUM.light}
       />
       <directionalLight

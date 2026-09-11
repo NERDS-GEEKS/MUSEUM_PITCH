@@ -40,7 +40,7 @@ export function DestinationCard({
   return (
     <GlassPanel
       className={cn(
-        "relative flex h-full w-full max-w-none min-w-0 flex-col overflow-hidden rounded-[18px] border-white/12 bg-[rgba(14,12,10,0.94)] p-3.5 shadow-[0_20px_60px_rgba(0,0,0,0.65)] backdrop-blur-2xl sm:p-5",
+        "relative flex h-full w-full max-w-none min-w-0 flex-col overflow-hidden rounded-[18px] border-white/12 bg-[rgba(14,12,10,0.94)] p-4 text-left shadow-[0_20px_60px_rgba(0,0,0,0.65)] backdrop-blur-2xl",
         className,
       )}
       {...props}
@@ -88,8 +88,8 @@ export function DestinationCard({
             introMobile,
             "shrink-0 text-balance font-black tracking-tight text-nm-text",
             large
-              ? "text-[1.45rem] leading-[1.15]"
-              : "text-[1.28rem] leading-[1.18]",
+              ? "text-[1.32rem] leading-[1.15]"
+              : "text-[1.2rem] leading-[1.18]",
           )}
         >
           {title}
@@ -98,7 +98,7 @@ export function DestinationCard({
           <p
             className={cn(
               introMobile,
-              "mt-1.5 shrink-0 text-[13px] leading-snug text-nm-muted",
+              "mt-1.5 shrink-0 text-[12px] leading-snug text-nm-muted",
               large ? "line-clamp-3" : "line-clamp-2",
             )}
           >
@@ -109,8 +109,8 @@ export function DestinationCard({
       {children ? (
         <div
           className={cn(
-            "relative z-0 flex min-h-0 flex-1 flex-col overflow-hidden",
-            hideIntroOnMobile ? "mt-2 md:mt-3" : "mt-3",
+            "relative z-0 mt-3 flex min-h-0 flex-1 flex-col overflow-hidden",
+            hideIntroOnMobile ? "max-md:mt-2" : undefined,
           )}
         >
           {children}

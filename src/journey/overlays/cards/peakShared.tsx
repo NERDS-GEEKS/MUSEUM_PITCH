@@ -64,7 +64,7 @@ export function PanelCtaButtons() {
  */
 export function storyItemGridClass(count: number): string {
   if (count === 3) return "grid grid-cols-3 gap-2";
-  if (count === 4) return "grid grid-cols-2 gap-2";
+  if (count === 4) return "grid grid-cols-2 gap-2.5";
   if (count === 5) return "grid grid-cols-5 gap-1.5";
   return "grid grid-cols-2 gap-2";
 }

@@ -27,6 +27,7 @@ describe("poseAtDock facing", () => {
     const lookSign = roomLookSign(0);
     expect(look.x - pos.x).toBeGreaterThan(lookSign * 2);
     expect(Math.abs(look.z - pos.z)).toBeLessThan(0.05);
+    expect(Math.abs(look.y - pos.y)).toBeLessThan(0.05);
     expect(pos.y).toBeGreaterThan(room.center[1] + 1);
   });
 
@@ -56,8 +57,17 @@ describe("poseAtDock facing", () => {
   it("on a phone still faces the story plaque head-on", () => {
     const pos = new Vector3();
     const look = new Vector3();
-    poseAtDock(ROOM_DOCK_T[0], pos, look, 9 / 19.5);
+    poseAtDock(ROOM_DOCK_T[0], pos, look, 9 / 19.5, 390);
     expect(Math.abs(look.x - pos.x)).toBeGreaterThan(3);
+    expect(Math.abs(look.z - pos.z)).toBeLessThan(0.05);
+    expect(Math.abs(look.y - pos.y)).toBeLessThan(0.05);
+  });
+
+  it("on a tablet frame looks at the plaque center", () => {
+    const pos = new Vector3();
+    const look = new Vector3();
+    poseAtDock(ROOM_DOCK_T[1], pos, look, 768 / 1024, 768);
+    expect(Math.abs(look.y - pos.y)).toBeLessThan(0.05);
     expect(Math.abs(look.z - pos.z)).toBeLessThan(0.05);
   });
 });

@@ -1,6 +1,4 @@
-import { Button } from "@/components/ui/Button";
 import { DestinationCard } from "@/journey/overlays/DestinationCard";
-import { setExperienceVideoOpen } from "@/journey/overlays/experienceVideoStore";
 
 const HERO_TAGS = [
   "Browser Native",
@@ -52,7 +50,7 @@ export function WelcomeCard() {
         ))}
       </div>
 
-      <dl className="mt-3 grid min-h-0 flex-1 grid-cols-2 gap-2 md:grid-cols-4">
+      <dl className="mt-3 grid min-h-0 flex-1 grid-cols-2 gap-2">
         {HERO_PILLARS.map((pillar) => (
           <div
             key={pillar.label}
@@ -67,18 +65,6 @@ export function WelcomeCard() {
           </div>
         ))}
       </dl>
-
-      <div className="mt-3 shrink-0">
-        <Button
-          type="button"
-          variant="primary"
-          size="md"
-          className="static translate-x-0 translate-y-0 before:hidden hover:before:hidden"
-          onClick={() => setExperienceVideoOpen(true)}
-        >
-          See in Action
-        </Button>
-      </div>
     </DestinationCard>
   );
 }

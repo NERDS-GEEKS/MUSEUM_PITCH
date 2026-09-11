@@ -73,6 +73,7 @@ function applyStraightHop(
   toT: number,
   blend: number,
   aspect: number,
+  width: number,
 ): { fov: number } {
   const toFinish =
     Math.abs(toT - COMPLETE_T) < 0.02 || toT >= COMPLETE_T - 0.01;
@@ -80,24 +81,24 @@ function applyStraightHop(
     Math.abs(fromT - COMPLETE_T) < 0.02 || fromT >= COMPLETE_T - 0.01;
 
   if (fromFinish) {
-    poseAtDock(COMPLETE_T, _dockPos, _dockLook, aspect);
+    poseAtDock(COMPLETE_T, _dockPos, _dockLook, aspect, width);
     poseAtFinishZoom(_dockPos, _dockLook, _fromPos, _fromLook, 1, aspect);
   } else {
-    poseAtDock(fromT, _fromPos, _fromLook, aspect);
+    poseAtDock(fromT, _fromPos, _fromLook, aspect, width);
   }
 
   if (toFinish) {
-    poseAtDock(COMPLETE_T, _dockPos, _dockLook, aspect);
+    poseAtDock(COMPLETE_T, _dockPos, _dockLook, aspect, width);
     poseAtFinishZoom(_dockPos, _dockLook, _toPos, _toLook, 1, aspect);
   } else {
-    poseAtDock(toT, _toPos, _toLook, aspect);
+    poseAtDock(toT, _toPos, _toLook, aspect, width);
   }
 
   const e = smoothstep01(blend);
   _targetPos.lerpVectors(_fromPos, _toPos, e);
   _lookAt.lerpVectors(_fromLook, _toLook, e);
 
-  const sceneFov = journeyFovForAspect(aspect, JOURNEY_FOV);
+  const sceneFov = journeyFovForAspect(aspect, JOURNEY_FOV, width);
   const fromFov = fromFinish ? FINISH_FOV : sceneFov;
   const toFov = toFinish ? FINISH_FOV : sceneFov;
   return {
@@ -241,7 +242,7 @@ export function JourneyCamera({
     const aspect =
       size.width > 0 && size.height > 0 ? size.width / size.height : 16 / 9;
 
-    poseAtDock(WELCOME_T, _welcomePos, _welcomeLook, aspect);
+    poseAtDock(WELCOME_T, _welcomePos, _welcomeLook, aspect, size.width);
     poseAtIntro(_introPos, _introLook);
 
     const creditsTarget = getFinishCreditsTarget();
@@ -255,7 +256,7 @@ export function JourneyCamera({
     );
     setFinishCredits(credits);
 
-    const sceneFov = journeyFovForAspect(aspect, JOURNEY_FOV);
+    const sceneFov = journeyFovForAspect(aspect, JOURNEY_FOV, size.width);
     let targetFov = sceneFov;
     let posDamp = 5.2;
     let lookDamp = 5.6;
@@ -275,7 +276,7 @@ export function JourneyCamera({
 
       if (mode === "straight" && seg) {
         const blend = travelBlend(progress) ?? (intent !== 0 ? 0 : 1);
-        const hop = applyStraightHop(seg.fromT, seg.toT, blend, aspect);
+        const hop = applyStraightHop(seg.fromT, seg.toT, blend, aspect, size.width);
         targetFov = hop.fov;
         posDamp = 14;
         lookDamp = 12;
@@ -287,7 +288,7 @@ export function JourneyCamera({
         lookDamp = 5.6;
         // Leaving Connect: keep blending from wall-fill zoom → route (no snap).
         if (credits > 0.001) {
-          poseAtDock(COMPLETE_T, _dockPos, _dockLook, aspect);
+          poseAtDock(COMPLETE_T, _dockPos, _dockLook, aspect, size.width);
           poseAtFinishZoom(
             _dockPos,
             _dockLook,
@@ -305,7 +306,7 @@ export function JourneyCamera({
       } else {
         // Settled at a POI - wall-fill zoom when finish credits are open
         const dockT = getActiveNode(progress).dockT;
-        poseAtDock(dockT, _dockPos, _dockLook, aspect);
+        poseAtDock(dockT, _dockPos, _dockLook, aspect, size.width);
         if (credits > 0.001 && dockT >= COMPLETE_T - 0.04) {
           poseAtFinishZoom(
             _dockPos,

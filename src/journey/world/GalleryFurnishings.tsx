@@ -1000,37 +1000,6 @@ const CORNER_OFF = 3.35;
  */
 const END_OFF = 4.22;
 
-function CeilingSpot({ position }: { position: [number, number, number] }) {
-  return (
-    <group position={position}>
-      <mesh>
-        <cylinderGeometry args={[0.08, 0.08, 0.04, 12]} />
-        <meshStandardMaterial
-          color="#2A2420"
-          metalness={0.45}
-          roughness={0.4}
-        />
-      </mesh>
-      <mesh position={[0, -0.1, 0]}>
-        <cylinderGeometry args={[0.1, 0.12, 0.1, 12]} />
-        <meshStandardMaterial
-          color="#3A342E"
-          metalness={0.5}
-          roughness={0.32}
-        />
-      </mesh>
-      <mesh position={[0, -0.16, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.15, 16]} />
-        <meshStandardMaterial
-          color={MUSEUM.lightPanel}
-          emissive={MUSEUM.lightPanel}
-          emissiveIntensity={0.9}
-        />
-      </mesh>
-    </group>
-  );
-}
-
 function FarDoorFlank({
   cx,
   cy,
@@ -1049,9 +1018,6 @@ function FarDoorFlank({
   return (
     <group>
       <Plant position={[cx + leftSign * CORNER_OFF, cy, plantZ]} tall />
-      <CeilingSpot position={[cx - 2.4, cy + 4.05, cz]} />
-      <CeilingSpot position={[cx + 2.4, cy + 4.05, cz]} />
-      <CeilingSpot position={[cx, cy + 4.05, cz + look * 2.2]} />
     </group>
   );
 }

@@ -130,7 +130,7 @@ function RoomStoryboards({
   const { size } = useThree();
   const aspect =
     size.width > 0 && size.height > 0 ? size.width / size.height : 16 / 9;
-  const board = storyBoardForAspect(aspect);
+  const board = storyBoardForAspect(aspect, size.width);
   const theme = getGalleryTheme(room.id);
   const Card = DESTINATION_CARDS[room.id];
   const [cx, cy, cz] = room.center;

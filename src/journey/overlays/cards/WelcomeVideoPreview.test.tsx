@@ -47,7 +47,7 @@ describe("WelcomeVideoPreview", () => {
     );
 
     await user.click(
-      screen.getByRole("button", { name: /play see in action with sound/i }),
+      screen.getByRole("button", { name: /play video with sound/i }),
     );
 
     expect(getExperienceVideoOpen()).toBe(true);
