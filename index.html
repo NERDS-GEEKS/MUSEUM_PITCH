@@ -4,9 +4,47 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/og.png" />
     <meta
+      id="viewport-meta"
       name="viewport"
       content="width=device-width, initial-scale=1.0, viewport-fit=cover"
     />
+    <script>
+      /**
+       * Phones narrower than 420 CSS px get the 420 px layout scaled down to
+       * fit, instead of a cramped reflow. Anything 420 px and wider keeps the
+       * normal device-width viewport.
+       */
+      (function lockNarrowViewport() {
+        var MIN_WIDTH = 420;
+        var meta = document.getElementById("viewport-meta");
+        var WIDE = "width=device-width, initial-scale=1.0, viewport-fit=cover";
+        var NARROW = "width=" + MIN_WIDTH + ", viewport-fit=cover";
+
+        function deviceWidth() {
+          var screenW = (window.screen && window.screen.width) || 0;
+          var screenH = (window.screen && window.screen.height) || 0;
+          if (!screenW || !screenH) return window.innerWidth || MIN_WIDTH;
+          // Some browsers keep screen dimensions orientation-independent.
+          var portrait = window.matchMedia("(orientation: portrait)").matches;
+          return portrait
+            ? Math.min(screenW, screenH)
+            : Math.max(screenW, screenH);
+        }
+
+        function apply() {
+          var next = deviceWidth() < MIN_WIDTH ? NARROW : WIDE;
+          if (meta.getAttribute("content") !== next) {
+            meta.setAttribute("content", next);
+          }
+        }
+
+        apply();
+        window.addEventListener("resize", apply);
+        window.addEventListener("orientationchange", function () {
+          setTimeout(apply, 100);
+        });
+      })();
+    </script>
     <meta
       name="description"
       content="NavMe: a spatial AI layer for physical museums. Navigate, discover, learn and engage, while museums gain spatial intelligence."

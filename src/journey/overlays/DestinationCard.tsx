@@ -99,7 +99,11 @@ export function DestinationCard({
             className={cn(
               introMobile,
               "mt-1.5 shrink-0 text-[12px] leading-snug text-nm-muted",
-              large ? "line-clamp-3" : "line-clamp-2",
+              // The phone plaque is ~380-430px wide, so the same copy needs
+              // more lines than the tablet sheet or the wide salon board.
+              large
+                ? "line-clamp-3 @max-[440px]:line-clamp-6"
+                : "line-clamp-2 @max-[440px]:line-clamp-4",
             )}
           >
             {body}

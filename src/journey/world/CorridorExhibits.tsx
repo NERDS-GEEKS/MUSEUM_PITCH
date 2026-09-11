@@ -103,6 +103,9 @@ function WallHtmlBoard({
         zIndexRange={[10, 1]}
       >
         <div
+          // Container queries let card content adapt to the board width
+          // (phone plaque vs tablet sheet vs salon board), not the viewport.
+          className="@container"
           style={{
             width: cssW,
             height: cssH,

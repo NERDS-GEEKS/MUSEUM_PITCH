@@ -3,8 +3,12 @@ export function isPortraitAspect(aspect: number): boolean {
   return aspect > 0 && aspect < 0.86;
 }
 
-/** Mid-size frames (large phones, foldables, tablets) that need their own plaque. */
-export const TABLET_MIN_PX = 421;
+/**
+ * Mid-size frames (foldables, tablets) that need their own plaque.
+ * The band starts at 431 so the largest phones (e.g. 430 px Pro Max, and the
+ * 420 px locked viewport narrow phones render at) keep the portrait plaque.
+ */
+export const TABLET_MIN_PX = 431;
 export const TABLET_MAX_PX = 928;
 
 export function isTabletFrame(width: number): boolean {
@@ -122,7 +126,7 @@ export function journeyFovForAspect(
 }
 
 /**
- * Plaque sized for the live viewport. Width 421–928 uses a tablet sheet
+ * Plaque sized for the live viewport. Width 431–928 uses a tablet sheet
  * that stays inside the HUD-safe frame; phones stay portrait; desktop
  * keeps the wide salon board.
  */

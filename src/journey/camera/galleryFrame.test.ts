@@ -17,9 +17,11 @@ describe("galleryFrame", () => {
     expect(isPortraitAspect(16 / 9)).toBe(false);
   });
 
-  it("treats 421–928 as the tablet frame band", () => {
+  it("treats 431–928 as the tablet frame band", () => {
     expect(isTabletFrame(420)).toBe(false);
-    expect(isTabletFrame(421)).toBe(true);
+    expect(isTabletFrame(421)).toBe(false);
+    expect(isTabletFrame(430)).toBe(false);
+    expect(isTabletFrame(431)).toBe(true);
     expect(isTabletFrame(768)).toBe(true);
     expect(isTabletFrame(928)).toBe(true);
     expect(isTabletFrame(929)).toBe(false);
@@ -31,7 +33,7 @@ describe("galleryFrame", () => {
     expect(iphone.worldW / iphone.worldH).toBeLessThan(0.9);
   });
 
-  it("uses a shorter tablet plaque so 421–928 stays aligned", () => {
+  it("uses a shorter tablet plaque so 431–928 stays aligned", () => {
     const tabletPortrait = storyBoardForAspect(768 / 1024, 768);
     const tabletLandscape = storyBoardForAspect(928 / 600, 928);
     expect(tabletPortrait.worldH).toBeLessThan(4);
